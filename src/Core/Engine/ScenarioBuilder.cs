@@ -4,7 +4,7 @@ using ChinaDemographicModel.Core.Models;
 namespace ChinaDemographicModel.Core.Engine;
 
 /// 从 HistoricalSeries 装配 baseline Scenario 的工厂。
-/// 紧模型约束：在历史观测年里，TotalBirths/SRB 用观测值；缺失年份用临近年份插值。
+/// 历史锁约束：在观测年里，TotalBirths/SRB 用观测值；缺失年份用临近年份插值。
 public sealed class ScenarioBuilder
 {
     public FertilityModel Fertility { get; init; } = new();

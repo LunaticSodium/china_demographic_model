@@ -24,10 +24,10 @@ The prompt is dense; below is the decomposition that this codebase implements.
 | "中国人口结构的" | Domain = China demographics. Seed data targeted to NBS / Census / 民政部 / DSP sources, 1978–2024. |
 | "自己扒一下历年出生人口，男女比，结婚率" | Self-contained data layer. `data/seed/*.csv` with provenance + caveats, replaceable by users with original source files. |
 | "平均初婚年龄、生育预期年龄概率分布" | Inputs go beyond aggregate rates: `FertilityModel` builds ASFR(15..49) from (TFR, mean age at first marriage), exposes σ + first-birth lag as parameters. |
-| "尝试匹配各个输入量和人口结构之间的关系" | Forward CCM engine + ScenarioBuilder reverse-engineer baseline inputs from observed totals. `Calibrator` solves the tight constraint. |
+| "尝试匹配各个输入量和人口结构之间的关系" | Forward CCM engine + ScenarioBuilder reverse-engineer baseline inputs from observed totals. `Calibrator` rescales ASFR to match observed births; `PopulationAlignment` rescales pyramid total to match NBS year-end. |
 | "允许我们通过假设'篡改'过去以及预测未来" | Scenario cloning + per-year `DemographicInputs` editing. Counterfactual scenarios run on the same engine as baseline; `EditedYears` set tracks divergence. |
 | "在建模阶段，一切数据都必须符合历史" | `LockToHistory = true` is the default. `RunProjection` re-applies observed `TotalBirths` / `SRB` / `CrudeMarriageRate` to inputs **after** any user edit, then rescales ASFR via `Calibrator.AlignBirthsToHistory` so model-predicted births == observed. |
-| "紧模型" (tight model) | The model is structurally over-constrained relative to the data: a single value (annual births) controls a multi-dimensional unknown (ASFR shape). See §2. |
+| "in modeling, all data must be consistent with history" | `LockToHistory = true` by default. `RunProjection` re-applies observed `TotalBirths` / `SRB` / `CrudeMarriageRate` to inputs **after** any user edit, then rescales ASFR via `Calibrator.AlignBirthsToHistory` so model-predicted births == observed. `PopulationAlignment` further rescales the projected pyramid total to NBS year-end. See §2. |
 | "尽管其实际上可能欠定" | Acknowledged. The codebase does not pretend uniqueness — it picks one solution (proportional scaling) and the docs/MODEL.md says so explicitly. |
 | "必须有非常事实的分析" | No fabricated time series. Where data is missing, `ScenarioBuilder.LookupOrInterp` does explicit linear interpolation between observed anchors, never extrapolates rates as constants. |
 | "Visual Studio 作为测试工具" | `.sln` + 2 `.csproj` layout. Builds cleanly with `dotnet build`; opens cleanly in VS 2022+. |
@@ -37,18 +37,18 @@ The prompt is dense; below is the decomposition that this codebase implements.
 
 ---
 
-## 2. The tight-model commitment
+## 2. The history-lock commitment
 
 This is the most load-bearing constraint. Restating it:
 
-**Historical years (1978–2024 in the current seed) must reproduce observed totals exactly.** The user can edit anything they want at the input layer, but when `LockToHistory = true`, the projection routine will overwrite their edits to known-observable fields before stepping the CCM. What the user *can* counterfactually change while staying tight:
+**Historical years (1978–2024 in the current seed) must reproduce observed totals exactly.** The user can edit anything they want at the input layer, but when `LockToHistory = true`, the projection routine will overwrite their edits to known-observable fields before stepping the CCM. What the user *can* counterfactually change while history-locked:
 
 - The **shape** of the fertility schedule (TFR allocation across ages 15..49)
 - The **shape** of the mortality schedule (life-table form, e0)
 - Behavioral mediators not yet wired in (marriage rate, mean age at first marriage)
 - Anything in **post-observed years** (2025+, fully free)
 
-What the user **cannot** change while staying tight:
+What the user **cannot** change while history-locked:
 
 - Annual total births (1978–2024 NBS series)
 - Annual sex ratio at birth (census + 1% sample anchors)
@@ -76,7 +76,7 @@ This tool lives inside a larger research project on Chinese class structure circ
 - **Default distrust of official / semi-official sources** on platform / labor / class topics.
 - **Visibility-inverse + curve-fitting extrapolation** as the methodological core of Stage 3.
 
-This demographic model is **Stage 3 tooling**. It treats published demographic data as a **lower bound on truth**, not as truth itself — but for fertility and mortality specifically, the public series have higher independent-cross-validation than e.g. household income or class-share data. So this tool implements the tight-model commitment with public data as the anchor, and exposes counterfactual editing as the analytic move.
+This demographic model is **Stage 3 tooling**. It treats published demographic data as a **lower bound on truth**, not as truth itself — but for fertility and mortality specifically, the public series have higher independent-cross-validation than e.g. household income or class-share data. So this tool anchors its baseline on observed NBS totals and exposes counterfactual editing as the analytic move.
 
 A user who believes the official 2017–2019 birth numbers are inflated can clone the baseline, edit those years downward, and observe the structural consequence in 2025 working-age population. That is the intended workflow.
 

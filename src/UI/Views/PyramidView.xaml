@@ -24,32 +24,16 @@
             </StackPanel>
         </Grid>
 
-        <Grid Grid.Row="1">
-            <Border Background="{StaticResource BgSurfaceBrush}"
-                    CornerRadius="10"
-                    ClipToBounds="True">
-                <Canvas x:Name="PyramidCanvas"
-                        SizeChanged="PyramidCanvas_SizeChanged"
-                        MouseMove="PyramidCanvas_MouseMove"
-                        MouseLeave="PyramidCanvas_MouseLeave"
-                        Background="Transparent"/>
-            </Border>
-
-            <!-- 引用面板：覆盖在金字塔右下角；不响应 hit-test，使 hover tooltip 仍生效 -->
-            <Border HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                    Margin="0,0,16,16" MaxWidth="380"
-                    Background="{StaticResource BgCardBrush}" Opacity="0.94"
-                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
-                    CornerRadius="8" Padding="10,8"
-                    IsHitTestVisible="False">
-                <TextBlock Text="{Binding CitationText}"
-                           Foreground="{StaticResource TextSecondaryBrush}"
-                           FontFamily="Consolas, Cascadia Mono, monospace"
-                           FontSize="10"
-                           TextWrapping="Wrap"
-                           LineHeight="14"/>
-            </Border>
-        </Grid>
+        <Border Grid.Row="1"
+                Background="{StaticResource BgSurfaceBrush}"
+                CornerRadius="10"
+                ClipToBounds="True">
+            <Canvas x:Name="PyramidCanvas"
+                    SizeChanged="PyramidCanvas_SizeChanged"
+                    MouseMove="PyramidCanvas_MouseMove"
+                    MouseLeave="PyramidCanvas_MouseLeave"
+                    Background="Transparent"/>
+        </Border>
 
         <TextBlock Grid.Row="2" Style="{StaticResource SubtitleText}" Margin="0,8,0,0"
                    Text="横轴：人数（万人）　·　纵轴：年龄。负向为男，正向为女。 baseline 实色 / counterfactual 描边线（如已克隆场景）"/>

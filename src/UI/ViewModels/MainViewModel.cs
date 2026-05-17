@@ -85,7 +85,7 @@ public partial class MainViewModel : ObservableObject
         SyncEditFieldsFromInputs();
     }
 
-    /// 给定 scenario 跑完整投影：紧约束 → CCM → 普查 re-anchor → NBS 口径修正。
+    /// 给定 scenario 跑完整投影：观测复位 → CCM → NBS 口径对齐。
     /// 这是 baseline 初始化和 RunProjection 命令的共用实现。
     private void RunProjectionForScenario(Scenario scen, bool applyHistoryLock)
     {
@@ -104,7 +104,7 @@ public partial class MainViewModel : ObservableObject
         {
             if (!scen.InputsByYear.TryGetValue(y, out var inp)) break;
 
-            // 紧约束：观测年总值复位
+            // 观测复位：已观测年的总值强制等于 NBS
             if (applyHistoryLock)
             {
                 if (Historical.BirthsByYear.TryGetValue(y, out var b)) inp.TotalBirths = b;
@@ -176,15 +176,35 @@ public partial class MainViewModel : ObservableObject
         get
         {
             if (Historical == null) return "—";
-            var mDict = Historical.E0MaleByYear;
-            var fDict = Historical.E0FemaleByYear;
-            double? eM = mDict.TryGetValue(CurrentYear, out var m) ? m : (double?)null;
-            double? eF = fDict.TryGetValue(CurrentYear, out var f) ? f : (double?)null;
+            // 与 ScenarioBuilder 的 LookupOrInterp 一致：邻近年份线性插值
+            // （否则 1982 显 "—" 因为 CSV 锚是 1981 而非 1982）；预测年（无 before / after）仍显 "—"。
+            double? eM = TryInterp(Historical.E0MaleByYear, CurrentYear);
+            double? eF = TryInterp(Historical.E0FemaleByYear, CurrentYear);
             if (eM == null && eF == null) return "—";
             if (eM == null) return $"F {eF:0.0}";
             if (eF == null) return $"M {eM:0.0}";
             return $"M {eM:0.0} / F {eF:0.0}";
         }
+    }
+
+    /// 邻近年份线性插值；年份在锚之外（only-after 或 only-before 都不算）返回 null，
+    /// 让 display 显示 "—" 而非"用最远锚的常值"——避免误导。
+    private static double? TryInterp(IReadOnlyDictionary<int, double> dict, int year)
+    {
+        if (dict.Count == 0) return null;
+        if (dict.TryGetValue(year, out var v)) return v;
+        int? before = null, after = null;
+        foreach (var k in dict.Keys)
+        {
+            if (k < year && (before == null || k > before)) before = k;
+            if (k > year && (after == null || k < after)) after = k;
+        }
+        if (before.HasValue && after.HasValue)
+        {
+            double t = (double)(year - before.Value) / (after.Value - before.Value);
+            return dict[before.Value] * (1 - t) + dict[after.Value] * t;
+        }
+        return null;  // 只有单边锚 → 不外推
     }
 
     public string CitationText
@@ -213,34 +233,51 @@ public partial class MainViewModel : ObservableObject
             2020 => ("第七次全国人口普查 (2020-11-01)", "https://www.stats.gov.cn/sj/pcsj/rkpc/d7c/"),
             _ => ("普查公报", "https://www.stats.gov.cn/sj/pcsj/rkpc/")
         };
-        return "数据源 · " + name + "\n" +
-               "国家统计局公报 (年龄 × 性别金字塔直接读取)\n" +
-               url;
+        return "数据源 · " + name + "\n" + url + "\n" +
+               "\n直接取自普查公报:\n" +
+               "  · 出生性别比 (SRB)\n" +
+               "  · 平均初婚年龄 (男/女)\n" +
+               "  · 出生时预期寿命 e0 (男/女)\n" +
+               "\n取自 NBS《中国统计年鉴》年度数据:\n" +
+               "  · 总人口 (年末口径) · 年出生数 · 年死亡数 · 粗结婚率\n" +
+               "\n金字塔形状 = CCM 自 1982 起向前推演; 普查实际年龄结构\n" +
+               "不直接覆盖（保 cohort 连续性, 见 docs/AUDIT.md §1）";
     }
 
     private static string BuildEstimateCitation(int y)
     {
-        return $"拟合 · {y} 年 (NBS 年度估算 + 紧约束 CCM)\n" +
-               "\n" +
+        return $"拟合 · {y} 年\n" +
+               "\n取自 NBS《中国统计年鉴》年度估算:\n" +
+               "  · 总人口 (年末口径) · 年出生数 · 年死亡数\n" +
+               "  · 粗结婚率 (民政部统计公报, 2002+)\n" +
+               "\n邻近普查年线性插值:\n" +
+               "  · 出生性别比 (SRB)\n" +
+               "  · 平均初婚年龄 · 出生时预期寿命 e0\n" +
+               "\n演化公式:\n" +
                "  P(a+1, s, t+1) = P(a, s, t) · (1 − q(a, s, t))\n" +
-               "  B(t)           ≡ NBS_births(t)   [硬约束]\n" +
-               "  P(0, M, t+1)   = B · SRB / (100+SRB) · (1−q₀ᴹ)\n" +
-               "  P(0, F, t+1)   = B · 100 / (100+SRB) · (1−q₀ꜰ)\n" +
-               "\n口径对齐 (PopulationAlignment):\n" +
-               "  P_aligned(a,s,t) = P_model(a,s,t) · NBS_yearend[t] / Σ P_model\n" +
-               "\nq(a,s,t) ← CensusLifeTables (5 普查 × 22 锚, 时间×年龄线性插值)";
+               "  B(t)           ≡ NBS_births(t)   [观测锁]\n" +
+               "  P(0, M, t+1)   = B · SRB/(100+SRB) · (1−q₀ᴹ)\n" +
+               "  P(0, F, t+1)   = B · 100/(100+SRB) · (1−q₀ꜰ)\n" +
+               "  P_aligned       = P · NBS_yearend / Σ P  (PopulationAlignment)\n" +
+               "  q(a,s,t)        ← CensusLifeTables (5 普查×22 锚, 时间×年龄插值)";
     }
 
     private string BuildForecastCitation(int y)
     {
         var sb = new System.Text.StringBuilder();
-        sb.AppendLine($"外推 · {y} 年 (后 NBS 观测期)");
+        sb.AppendLine($"外推 · {y} 年 (后 NBS 观测期 {LastObservedYear})");
         sb.AppendLine();
-        sb.AppendLine($"  输入外推: TotalBirths / SRB / TFR / MAFM /");
-        sb.AppendLine($"           CrudeMarriageRate / e0  取 {LastObservedYear} 末值");
+        sb.AppendLine("外推规则 (LookupOrInterp last-value-constant):");
+        sb.AppendLine($"  TotalBirths(t) = TotalBirths({LastObservedYear}) 定值");
+        sb.AppendLine($"  SRB / MAFM / CrudeMarriageRate / e0 同上");
+        sb.AppendLine();
+        sb.AppendLine("演化:");
         sb.AppendLine("  CCM 同 NBS 估算年;");
-        sb.AppendLine("  无 NBS 对齐 (PopulationAlignment 跳过);");
-        sb.AppendLine("  q(a,s,t) ← CensusLifeTables[2020] + Brass shift to e0(t).");
+        sb.AppendLine("  q(a,s,t) ← CensusLifeTables[2020] + Brass shift 到 e0(t).");
+        sb.AppendLine();
+        sb.AppendLine("约束放松:");
+        sb.AppendLine("  · 无 NBS 年末对齐 (PopulationAlignment 跳过)");
+        sb.AppendLine("  · 无观测复位 → 输入完全外推或来自反事实编辑");
 
         if (IsCounterfactualScenario && ActiveScenario != null && ActiveScenario.EditedYears.Contains(y))
         {

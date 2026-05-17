@@ -1,7 +1,7 @@
 namespace ChinaDemographicModel.Core.Models;
 
 /// 一个反事实 / 预测场景。
-/// Baseline：历史紧约束 + 当前数据外推。
+/// Baseline：历史观测锁定 + 当前数据外推。
 /// 用户可 clone Baseline 然后修改任意年的 Inputs，重新 Project，对比偏离历史的程度。
 public sealed class Scenario
 {

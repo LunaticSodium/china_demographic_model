@@ -2,7 +2,7 @@ using ChinaDemographicModel.Core.Models;
 
 namespace ChinaDemographicModel.Core.Engine;
 
-/// 紧模型约束器。
+/// 历史观测对齐器。
 /// 给定观测总出生数 → 整体缩放 ASFR 使模型预测 == 观测；
 /// 给定普查年龄结构 → 对当年金字塔做形状对齐（最小二乘投影；这里 stub 为 ratio 拉齐）。
 /// 任何"篡改"在 LockToHistory=true 时都会被这里强制回退到观测值。

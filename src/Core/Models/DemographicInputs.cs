@@ -1,7 +1,7 @@
 namespace ChinaDemographicModel.Core.Models;
 
 /// 单年的人口动力学输入向量。所有数组按年龄索引 0..MaxAge。
-/// 紧模型约束语义：在 LockToHistory 模式下，TotalBirths / SexRatioAtBirth 等观测量
+/// 锁定语义：在 LockToHistory 模式下，TotalBirths / SexRatioAtBirth 等观测量
 /// 视为硬约束；其余（生育年龄结构、死亡率结构）会被 Calibrator 缩放以匹配观测总量。
 public sealed class DemographicInputs
 {

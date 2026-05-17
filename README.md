@@ -1,14 +1,14 @@
-# 中国人口结构 · 紧模型 / 反事实工具
+# 中国人口结构 · 反事实工具
 
 C# (.NET 8) + WPF 桌面应用。属于父项目 _2025 年前后的中国社会阶级情况调查_ Stage 3 工具链。
 
 ## 这是什么
 
-一个**紧约束**的 cohort-component 人口模型 + 反事实编辑器：
+一个 cohort-component 人口模型 + 反事实编辑器：
 
 - 加载 1978–2024 的公开历史观测（出生数 / 出生性别比 / 结婚率 / 平均初婚年龄 / 普查金字塔）。
 - 用 CCM (Cohort-Component Method) 把起始普查金字塔逐年向前推演到 2050。
-- **紧模型** = 在 `LockToHistory` 模式下，已观测年的 **总出生数 / 性别比 / 结婚率** 被作为硬约束；模型 ASFR / 死亡率 schedule 被 Calibrator 缩放以命中观测。
+- 默认 `LockToHistory` 模式下，已观测年的 **总出生数 / 性别比 / 结婚率** 被作为硬约束；模型 ASFR / 死亡率 schedule 被 Calibrator 缩放以命中观测；模型金字塔总人口被 PopulationAlignment 对齐到 NBS 年末。
 - 用户可 **克隆 baseline 为反事实场景**：解除历史锁，自由修改任意年的输入向量（例如"如果 1980 年代不强推计生""如果 2016 年开放三孩"），重跑投影，对比偏离基线。
 - 数据本身不被假设为"真实"；本工具用"以观测为约束 + 反事实推演"代替"以观测为真相"。详见 `data/sources.md`。
 
@@ -54,7 +54,7 @@ china_demographic_model/
 │   │   ├── total_population_yearbook.csv  # NBS 年末口径
 │   │   └── census_pyramids/pyramid_2020.csv
 │   └── sources.md                    # 数据来源 + 口径 + caveat
-└── docs/MODEL.md                     # CCM 公式 + 紧约束推导
+└── docs/MODEL.md                     # CCM 公式 + 约束推导
 ```
 
 数据被 csproj 用 `<None Include="..\..\data\**\*.csv">` 复制到 bin/{config}/net8.0-windows/data/seed/。运行时 SeedLoader 用 ResolveSeedDir 寻路。
@@ -67,7 +67,7 @@ china_demographic_model/
 ✅ **CensusLifeTables**：直接采用 5 次普查 22 锚 × 男女 q(x)，时间×年龄二维插值（普查范围外用 Brass shift）
 ✅ **PopulationAlignment**（显式命名）：对 NBS 年末口径做缩放修正；UI 显示对齐后数值
 ✅ 自由 CCM 投影（移除普查覆盖以保 cohort 连续性，详见 docs/AUDIT.md §1）
-✅ Calibrator（紧约束：模型出生 ↔ 观测出生缩放对齐）
+✅ Calibrator（模型出生 ↔ 观测出生缩放对齐）
 ✅ ScenarioBuilder（baseline 自动装配 + 观测 e0 接入）
 ✅ 历史数据 1978-2024 全量年度（出生 / 死亡 / SRB / 结婚率 / 平均初婚 / e0 / 年末人口 / 结婚 / 离婚）+ 5 个普查金字塔
 ✅ 反事实克隆 + 偏离基线对比

@@ -4,7 +4,7 @@
         xmlns:views="clr-namespace:ChinaDemographicModel.UI.Views"
         xmlns:vm="clr-namespace:ChinaDemographicModel.UI.ViewModels"
         xmlns:controls="clr-namespace:ChinaDemographicModel.UI.Controls"
-        Title="中国人口结构 · 紧模型 / 反事实工具"
+        Title="中国人口结构 · 反事实工具"
         Width="1480" Height="900"
         MinWidth="1100" MinHeight="700"
         WindowStartupLocation="CenterScreen"
@@ -35,7 +35,7 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Orientation="Vertical">
-                    <TextBlock Text="中国人口结构 · 紧模型 / 反事实工具" Style="{StaticResource TitleText}"/>
+                    <TextBlock Text="中国人口结构 · 反事实工具" Style="{StaticResource TitleText}"/>
                     <TextBlock Text="Cohort-Component projection · 历史一致性约束 · 反事实推演"
                                Style="{StaticResource SubtitleText}" Margin="0,2,0,0"/>
                 </StackPanel>
@@ -119,8 +119,8 @@
 
                 <Border Style="{StaticResource Card}" Margin="0,0,0,14">
                     <StackPanel>
-                        <TextBlock Text="约束模式" Style="{StaticResource SectionHeader}"/>
-                        <CheckBox Content="锁定历史观测（紧模型）"
+                        <TextBlock Text="历史锁" Style="{StaticResource SectionHeader}"/>
+                        <CheckBox Content="锁定历史观测"
                                   IsChecked="{Binding LockToHistory, Mode=TwoWay}"
                                   Margin="0,0,0,6"/>
                         <TextBlock Style="{StaticResource SubtitleText}"
@@ -223,11 +223,24 @@
                     </StackPanel>
                 </Border>
 
-                <Border Style="{StaticResource Card}">
+                <Border Style="{StaticResource Card}" Margin="0,0,0,14">
                     <StackPanel>
                         <TextBlock Text="日志" Style="{StaticResource SectionHeader}"/>
                         <TextBlock Text="{Binding StatusLog}" Style="{StaticResource SubtitleText}"
                                    MaxHeight="200" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="数据来源 / 引用" Style="{StaticResource SectionHeader}"/>
+                        <TextBlock Text="{Binding CitationText}"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontFamily="Consolas, Cascadia Mono, monospace"
+                                   FontSize="10"
+                                   TextWrapping="Wrap"
+                                   LineHeight="14"
+                                   MaxHeight="260"/>
                     </StackPanel>
                 </Border>
             </StackPanel>
