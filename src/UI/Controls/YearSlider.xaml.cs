@@ -116,9 +116,14 @@ public partial class YearSlider : UserControl
             }
         }
 
+        // 4 色配色（用户 round 3 指定）：
+        //   一般年   → 默认灰 (BgElevBrush)
+        //   普查年   → 草绿 (CensusBrush = SuccessBrush)
+        //   预测年   → 天青 (ForecastBrush)
+        //   反事实段 → 鹅黄 (WarnBrush)
         Brush brushGeneral = (Brush)FindResource("BgElevBrush");
-        Brush brushCensus = (Brush)FindResource("AccentPrimaryBrush");
-        Brush brushForecast = (Brush)FindResource("AccentTertiaryBrush");
+        Brush brushCensus = (Brush)FindResource("CensusBrush");
+        Brush brushForecast = (Brush)FindResource("ForecastBrush");
         Brush brushCounterfactual = (Brush)FindResource("WarnBrush");
         Brush textMuted = (Brush)FindResource("TextMutedBrush");
         Brush textBright = (Brush)FindResource("TextPrimaryBrush");

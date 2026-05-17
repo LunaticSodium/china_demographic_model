@@ -22,6 +22,8 @@
     <Color x:Key="Danger">#FFF87171</Color>
     <Color x:Key="Warn">#FFFBBF24</Color>
     <Color x:Key="Success">#FF4ADE80</Color>
+    <Color x:Key="Forecast">#FF67E8F9</Color>
+    <Color x:Key="Census">#FF4ADE80</Color>
 
     <SolidColorBrush x:Key="BgBaseBrush" Color="{StaticResource BgBase}"/>
     <SolidColorBrush x:Key="BgSurfaceBrush" Color="{StaticResource BgSurface}"/>
@@ -39,6 +41,8 @@
     <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource Danger}"/>
     <SolidColorBrush x:Key="WarnBrush" Color="{StaticResource Warn}"/>
     <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource Success}"/>
+    <SolidColorBrush x:Key="ForecastBrush" Color="{StaticResource Forecast}"/>
+    <SolidColorBrush x:Key="CensusBrush" Color="{StaticResource Census}"/>
 
     <FontFamily x:Key="UiFont">Segoe UI, Microsoft YaHei UI, PingFang SC, Noto Sans CJK SC, sans-serif</FontFamily>
 

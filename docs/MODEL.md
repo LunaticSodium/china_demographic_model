@@ -147,19 +147,36 @@ $$
 
 形状（年龄结构、性别比）完全保留；只对齐总量。
 
-### 7.3 调用顺序
+### 7.3 调用顺序（round 3 改动）
 
 `MainViewModel.RunProjectionForScenario` 每年的步骤：
 1. 紧约束应用（已观测年 totals 复位）
 2. CCM 单步（$P_t \to P_{t+1}^{\text{model}}$）
-3. 普查 re-anchor（如果 $t+1$ 是普查年，用普查金字塔替换 $P^{\text{model}}$；保留形状）
-4. **PopulationAlignment** 缩放到 NBS 年末 $N(t+1)$
+3. **PopulationAlignment** 缩放到 NBS 年末 $N(t+1)$
 
-普查年 re-anchor 后 + 再做 NBS 年末对齐，是有意的：普查时点（11月1日）≠ 年末（12月31日），相差几百万级。UI 显示年末口径为求与非普查年连续。
+**round 2 曾在 #2 #3 之间插入"普查年 re-anchor"覆盖步骤，round 3 移除**——
+WPP 2022 §I.A 明确：CCMPP 应通过迭代调整组件（特别是迁移残差）逼近普查 benchmark，而不是用普查覆盖投影。覆盖会破坏 cohort 连续性。详见 `docs/AUDIT.md` §1。
+
+CCMPP 自 1982 普查起跑后**自由**演化；只对总人口做逐年 NBS 对齐。年龄结构形状的累积偏差留待 UI deviation report 显示，未来实现 IPF / NM residual 估计时再吸收。
 
 ### 7.4 反事实场景下的语义
 
 LockToHistory = false 时仍调用 PopulationAlignment，但 NBS 序列只覆盖 1978-2024，2025+ 年份没有目标，函数返回 `WasCorrected = false`，金字塔保留模型原始值。反事实场景在 1978-2024 仍然被对齐——因为这些年的 NBS 数据是"事实"，反事实改的是输入（生育 / 死亡率 / 婚姻），不改"已发生的事实总量"。要想反事实 NBS 序列本身，需要扩展 PopulationAlignment 接受场景内 override（未实现）。
+
+## 7.5. 时间参考约定（time reference）
+
+参 WPP 2022 §I.A：UN DESA 2022 修订把人口口径统一为 **1 January** of reference year，vital rates 用 **calendar year (1 Jan – 31 Dec)**。
+
+本项目约定 **年末口径**（与 NBS "年末人口"标签一致）：
+
+- `pyramid.Year = t` 代表 **年末 t（≈ 1-Jan-(t+1)）**
+- `inputs[t]` 代表"经历年 t+1 整年的发生量"（出生 / 死亡 / SRB / 结婚等）
+- CCM 步骤：`Project(pyramid_t, inputs_t) → pyramid_{t+1}` —— 从年末 t 出发，经历年 t+1，到达年末 t+1
+- `Historical.TotalPopulationYearEndByYear[Y]` = NBS 年末 Y = pyramid_Y.Total（修正后）
+
+差别于 WPP 2022 的 1-Jan 标签，仅是 label shift；数学上等价。
+
+**这个约定显式确立后**：UI 上"当前年 2020"指的是 **2020 年末** 的人口快照（即 12-31-2020）。这与右栏指标读取的 `Historical.*ByYear[2020]` 是 2020 整年发生量统一。
 
 ## 8. 模型局限（综合）
 

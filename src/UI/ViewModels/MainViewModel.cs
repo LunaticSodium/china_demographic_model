@@ -114,11 +114,14 @@ public partial class MainViewModel : ObservableObject
             // CCM
             var next = _projector.Project(cur, inp);
 
-            // 普查年 re-anchor：替换为普查金字塔（保留形状）
-            if (Historical.CensusPyramidByYear.TryGetValue(next.Year, out var census))
-                next = _calibrator.AlignPyramidToCensus(next, census);
+            // 注意：round 2 在此处有 AlignPyramidToCensus 覆盖普查年金字塔。
+            // round 3 移除——WPP 2022 §I.A 说明 CCMPP 应当通过迭代调整组件来逼近
+            // 普查 benchmark，而不是用普查覆盖投影。覆盖会破坏 cohort 连续性
+            // （1989→1990 同一 cohort 不衔接）。详见 docs/AUDIT.md §1。
+            // 普查金字塔现在只作为 baseline.Initial 的种子，以及未来 IPF / 软对齐
+            // 的钩子（Calibrator.AlignPyramidToCensus 函数本身保留但不再被调用）。
 
-            // 显性口径修正：对齐到 NBS 年末
+            // 显性口径修正：对齐到 NBS 年末（逐年连续）
             var (alignedNext, _, _) = PopulationAlignment.AlignToNbsYearEnd(
                 next, Historical.TotalPopulationYearEndByYear);
             next = alignedNext;

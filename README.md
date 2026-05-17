@@ -66,7 +66,7 @@ china_demographic_model/
 ✅ FertilityModel（TFR + 平均初婚年龄 → ASFR）
 ✅ **CensusLifeTables**：直接采用 5 次普查 22 锚 × 男女 q(x)，时间×年龄二维插值（普查范围外用 Brass shift）
 ✅ **PopulationAlignment**（显式命名）：对 NBS 年末口径做缩放修正；UI 显示对齐后数值
-✅ 普查年自动 re-anchor：投影到 1990/2000/2010/2020 时替换为普查金字塔
+✅ 自由 CCM 投影（移除普查覆盖以保 cohort 连续性，详见 docs/AUDIT.md §1）
 ✅ Calibrator（紧约束：模型出生 ↔ 观测出生缩放对齐）
 ✅ ScenarioBuilder（baseline 自动装配 + 观测 e0 接入）
 ✅ 历史数据 1978-2024 全量年度（出生 / 死亡 / SRB / 结婚率 / 平均初婚 / e0 / 年末人口 / 结婚 / 离婚）+ 5 个普查金字塔

@@ -49,9 +49,9 @@
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,14,0">
                         <Border Width="8" Height="8" CornerRadius="2" Margin="0,0,4,0" Background="{StaticResource BgElevBrush}"/>
                         <TextBlock Text="一般" Style="{StaticResource SubtitleText}" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                        <Border Width="8" Height="8" CornerRadius="2" Margin="0,0,4,0" Background="{StaticResource AccentPrimaryBrush}"/>
+                        <Border Width="8" Height="8" CornerRadius="2" Margin="0,0,4,0" Background="{StaticResource CensusBrush}"/>
                         <TextBlock Text="普查" Style="{StaticResource SubtitleText}" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                        <Border Width="8" Height="8" CornerRadius="2" Margin="0,0,4,0" Background="{StaticResource AccentTertiaryBrush}"/>
+                        <Border Width="8" Height="8" CornerRadius="2" Margin="0,0,4,0" Background="{StaticResource ForecastBrush}"/>
                         <TextBlock Text="预测" Style="{StaticResource SubtitleText}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                         <Border Width="8" Height="8" CornerRadius="2" Margin="0,0,4,0" Background="{StaticResource WarnBrush}"/>
                         <TextBlock Text="反事实" Style="{StaticResource SubtitleText}" VerticalAlignment="Center"/>
