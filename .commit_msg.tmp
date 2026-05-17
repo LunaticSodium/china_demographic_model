@@ -1,0 +1,24 @@
+Add citation panel at pyramid bottom-right + ship v0.1.0
+
+For each year shown in the pyramid view, the bottom-right overlay
+displays one of three citation forms:
+
+1. Census years (1982 / 1990 / 2000 / 2010 / 2020):
+   data source label + NBS census report URL.
+
+2. Non-census historical years (1983-2024 excluding census):
+   the CCM formulas plus the alignment step (PopulationAlignment),
+   shown symbolically — no actual values substituted, per request.
+
+3. Forecast years (after last NBS observed year 2024):
+   the extrapolation function (LookupOrInterp last-value-constant
+   over TotalBirths / SRB / TFR / MAFM / CrudeMarriageRate / e0),
+   plus any counterfactual edits if the active scenario modified
+   the inputs for the displayed year.
+
+The citation Border is IsHitTestVisible=False so the pyramid's
+400ms hover tooltip continues to work underneath it.
+
+This marks the first usable version of the tool (v0.1.0).
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>

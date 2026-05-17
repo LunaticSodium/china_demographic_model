@@ -187,6 +187,83 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    public string CitationText
+    {
+        get
+        {
+            int y = CurrentYear;
+            var censusYears = new HashSet<int> { 1982, 1990, 2000, 2010, 2020 };
+
+            if (censusYears.Contains(y))
+                return BuildCensusCitation(y);
+            if (y > LastObservedYear)
+                return BuildForecastCitation(y);
+            return BuildEstimateCitation(y);
+        }
+    }
+
+    private static string BuildCensusCitation(int y)
+    {
+        var (name, url) = y switch
+        {
+            1982 => ("第三次全国人口普查 (1982-07-01)", "https://www.stats.gov.cn/sj/tjgb/rkpcgb/qgrkpcgb/"),
+            1990 => ("第四次全国人口普查 (1990-07-01)", "https://www.stats.gov.cn/sj/tjgb/rkpcgb/qgrkpcgb/"),
+            2000 => ("第五次全国人口普查 (2000-11-01)", "https://www.stats.gov.cn/sj/tjgb/rkpcgb/qgrkpcgb/"),
+            2010 => ("第六次全国人口普查 (2010-11-01)", "https://www.stats.gov.cn/zt_18555/zdtjgz/zgrkpc/d6crkpc/"),
+            2020 => ("第七次全国人口普查 (2020-11-01)", "https://www.stats.gov.cn/sj/pcsj/rkpc/d7c/"),
+            _ => ("普查公报", "https://www.stats.gov.cn/sj/pcsj/rkpc/")
+        };
+        return "数据源 · " + name + "\n" +
+               "国家统计局公报 (年龄 × 性别金字塔直接读取)\n" +
+               url;
+    }
+
+    private static string BuildEstimateCitation(int y)
+    {
+        return $"拟合 · {y} 年 (NBS 年度估算 + 紧约束 CCM)\n" +
+               "\n" +
+               "  P(a+1, s, t+1) = P(a, s, t) · (1 − q(a, s, t))\n" +
+               "  B(t)           ≡ NBS_births(t)   [硬约束]\n" +
+               "  P(0, M, t+1)   = B · SRB / (100+SRB) · (1−q₀ᴹ)\n" +
+               "  P(0, F, t+1)   = B · 100 / (100+SRB) · (1−q₀ꜰ)\n" +
+               "\n口径对齐 (PopulationAlignment):\n" +
+               "  P_aligned(a,s,t) = P_model(a,s,t) · NBS_yearend[t] / Σ P_model\n" +
+               "\nq(a,s,t) ← CensusLifeTables (5 普查 × 22 锚, 时间×年龄线性插值)";
+    }
+
+    private string BuildForecastCitation(int y)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"外推 · {y} 年 (后 NBS 观测期)");
+        sb.AppendLine();
+        sb.AppendLine($"  输入外推: TotalBirths / SRB / TFR / MAFM /");
+        sb.AppendLine($"           CrudeMarriageRate / e0  取 {LastObservedYear} 末值");
+        sb.AppendLine("  CCM 同 NBS 估算年;");
+        sb.AppendLine("  无 NBS 对齐 (PopulationAlignment 跳过);");
+        sb.AppendLine("  q(a,s,t) ← CensusLifeTables[2020] + Brass shift to e0(t).");
+
+        if (IsCounterfactualScenario && ActiveScenario != null && ActiveScenario.EditedYears.Contains(y))
+        {
+            sb.AppendLine();
+            sb.AppendLine($"反事实修改 (本年, 来自场景 [{ActiveScenario.Name}]):");
+            if (ActiveScenario.InputsByYear.TryGetValue(y, out var inp))
+            {
+                sb.AppendLine($"  TotalBirths = {inp.TotalBirths / 1e4:0} 万");
+                sb.AppendLine($"  SRB         = {inp.SexRatioAtBirth:0.0}");
+                sb.AppendLine($"  TFR         = {inp.TotalFertilityRate:0.00}");
+                sb.AppendLine($"  MAFM (F)    = {inp.MeanAgeFirstMarriageFemale:0.0}");
+                sb.AppendLine($"  CrudeMarriageRate = {inp.CrudeMarriageRate:0.0}");
+            }
+        }
+        else if (IsCounterfactualScenario)
+        {
+            sb.AppendLine();
+            sb.AppendLine($"场景 [{ActiveScenario?.Name}] 当前年未被编辑.");
+        }
+
+        return sb.ToString();
+    }
+
     public string DeviationReport
     {
         get
@@ -275,6 +352,7 @@ public partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(DeathsDisplay));
         OnPropertyChanged(nameof(E0Display));
         OnPropertyChanged(nameof(DeviationReport));
+        OnPropertyChanged(nameof(CitationText));
     }
 
     [RelayCommand]
