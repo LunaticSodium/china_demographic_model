@@ -17,6 +17,7 @@ public sealed class HistoricalSeries
     public Dictionary<int, double> E0MaleByYear { get; init; } = new();
     public Dictionary<int, double> E0FemaleByYear { get; init; } = new();
     public Dictionary<int, double> TotalPopulationYearEndByYear { get; init; } = new();  // 单位：人 (NBS 年末估计)
+    public Dictionary<int, double> TfrByYear { get; init; } = new();
     public Dictionary<int, PopulationPyramid> CensusPyramidByYear { get; init; } = new();
 
     public IEnumerable<int> Years
@@ -29,6 +30,7 @@ public sealed class HistoricalSeries
             foreach (var y in SexRatioAtBirthByYear.Keys) s.Add(y);
             foreach (var y in CrudeMarriageRateByYear.Keys) s.Add(y);
             foreach (var y in E0OverallByYear.Keys) s.Add(y);
+            foreach (var y in TfrByYear.Keys) s.Add(y);
             foreach (var y in CensusPyramidByYear.Keys) s.Add(y);
             return s;
         }
@@ -50,6 +52,7 @@ public sealed class HistoricalSeries
             E0MaleByYear = SeedLoader.LoadYearlyScalar(Path.Combine(seedDir, "life_expectancy.csv"), "e0_male"),
             E0FemaleByYear = SeedLoader.LoadYearlyScalar(Path.Combine(seedDir, "life_expectancy.csv"), "e0_female"),
             TotalPopulationYearEndByYear = ScaleWanToPersons(SeedLoader.LoadYearlyScalar(Path.Combine(seedDir, "total_population_yearbook.csv"), "total_year_end_wan")),
+            TfrByYear = SeedLoader.LoadYearlyScalar(Path.Combine(seedDir, "tfr_yearly.csv"), "tfr"),
         };
         var pyrDir = Path.Combine(seedDir, "census_pyramids");
         if (Directory.Exists(pyrDir))

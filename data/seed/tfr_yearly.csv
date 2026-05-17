@@ -1,0 +1,26 @@
+# 中国总和生育率 TFR（期生育率, period TFR）年度估计
+# 来源混合：
+#   - 普查直接公布（1982/1990/2000/2010/2020）：census_*
+#   - 1‰ 抽样调查年（1995/2005/2015）：sample_*
+#   - 其他年份：NBS 估计 / 学界主流估计
+# Caveat: 2000 (1.22) 和 2010 (1.18) 等普查 TFR 与 NBS 年度估计差异大，
+#   学界对"实际 TFR"是更低（易富贤等）还是有政策刺激反弹（NBS）存在分歧。
+#   本表取**普查 + NBS 中间估计**，作为 OLS 趋势外推的数据基础。
+year,tfr,source,note
+1982,2.86,census_3rd,
+1990,2.31,census_4th,
+1995,1.46,sample_1pct_1995,
+2000,1.22,census_5th,争议
+2005,1.34,sample_1pct_2005,
+2010,1.18,census_6th,
+2015,1.05,sample_1pct_2015,
+2016,1.30,nbs_estimate,二孩政策刺激
+2017,1.58,nbs_estimate,
+2018,1.49,nbs_estimate,
+2019,1.47,nbs_estimate,
+2020,1.30,census_7th,
+2021,1.16,nbs_estimate,
+2022,1.05,nbs_estimate,
+2023,1.02,nbs_estimate,
+2024,1.00,nbs_estimate,
+2025,1.05,nbs_estimate,通办政策小反弹

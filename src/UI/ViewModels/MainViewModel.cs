@@ -58,6 +58,9 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private string editHint = "选择年份并修改滑条，点'应用到当前年'。";
     [ObservableProperty] private SeriesGroup selectedSeriesGroup = SeriesGroup.TenThousandPeople;
     [ObservableProperty] private double pyramidMaxPerAge;  // 跨所有 scenario + year 的最大单龄人数，X 轴固定刻度
+    [ObservableProperty] private string selectedForecastModelId = "ols-trend";
+
+    public IReadOnlyList<IForecastModel> AllForecastModels => ForecastRegistry.AllModels;
 
     public MainViewModel()
     {
@@ -100,13 +103,32 @@ public partial class MainViewModel : ObservableObject
         if (initWasCorr)
             AppendLog($"PopulationAlignment: 起始 {initialAligned.Year} 已对齐 NBS 年末口径");
 
+        // 预先构造 ForecastContext + 解析模型——预测年用
+        var ctx = ScenarioBuilder.BuildContext(scen, Historical, _builder.Fertility);
+        var forecastModel = ForecastRegistry.Resolve(scen.ForecastModelId);
+        int lastObs = ctx.LastObservedYear;
+
         var cur = initialAligned;
         for (int y = cur.Year; y < YearMax; y++)
         {
-            if (!scen.InputsByYear.TryGetValue(y, out var inp)) break;
+            // 观测年: InputsByYear 已有；预测年: 若用户没编辑，由 model 即时生成；
+            //         若用户已编辑（ApplyEdits 写过），用用户编辑的值。
+            DemographicInputs inp;
+            if (scen.InputsByYear.TryGetValue(y, out var existing))
+            {
+                inp = existing;
+            }
+            else if (y > lastObs)
+            {
+                inp = forecastModel.Project(y, ctx);
+            }
+            else
+            {
+                break;  // 观测年缺数据 → 终止
+            }
 
-            // 观测复位：已观测年的总值强制等于 NBS
-            if (applyHistoryLock)
+            // 观测复位：仅对观测年（y ≤ lastObs）
+            if (applyHistoryLock && y <= lastObs)
             {
                 if (Historical.BirthsByYear.TryGetValue(y, out var b)) inp.TotalBirths = b;
                 if (Historical.SexRatioAtBirthByYear.TryGetValue(y, out var s)) inp.SexRatioAtBirth = s;
@@ -114,15 +136,7 @@ public partial class MainViewModel : ObservableObject
                 _calibrator.AlignBirthsToHistory(inp, inp.TotalBirths, cur);
             }
 
-            // CCM
             var next = _projector.Project(cur, inp);
-
-            // 注意：round 2 在此处有 AlignPyramidToCensus 覆盖普查年金字塔。
-            // round 3 移除——WPP 2022 §I.A 说明 CCMPP 应当通过迭代调整组件来逼近
-            // 普查 benchmark，而不是用普查覆盖投影。覆盖会破坏 cohort 连续性
-            // （1989→1990 同一 cohort 不衔接）。详见 docs/AUDIT.md §1。
-            // 普查金字塔现在只作为 baseline.Initial 的种子，以及未来 IPF / 软对齐
-            // 的钩子（Calibrator.AlignPyramidToCensus 函数本身保留但不再被调用）。
 
             // 显性口径修正：对齐到 NBS 年末（逐年连续）
             var (alignedNext, _, _) = PopulationAlignment.AlignToNbsYearEnd(
@@ -289,16 +303,13 @@ public partial class MainViewModel : ObservableObject
         var sb = new System.Text.StringBuilder();
         int last = LastObservedYear;
         int dy = y - last;
-        sb.AppendLine($"预测 · {y} 年 (后 NBS 观测期 {last})");
+        var model = ForecastRegistry.Resolve(SelectedForecastModelId);
+        sb.AppendLine($"预测 · {y} 年 (后 NBS 观测期 {last}, Δt={dy})");
         sb.AppendLine();
-        sb.AppendLine("ForecastModel 投影 (Core/Engine/ForecastModel.cs):");
-        sb.AppendLine($"  TFR(t)  = max(0.85, 1.00 − 0.005·Δt)  [Δt = {dy}]");
-        sb.AppendLine($"  e0(t)   = min(86, e0({last}) + 0.12·Δt)");
-        sb.AppendLine($"  SRB(t)  = 105.5 + (SRB({last}) − 105.5)·exp(−ln2/18·Δt)");
-        sb.AppendLine($"  MAFM(t) = min(33男 / 31女, MAFM({last}) + 0.10·Δt)");
-        sb.AppendLine($"  婚率(t) = 3.0 + (婚率({last}) − 3.0)·exp(−ln2/20·Δt)");
+        sb.AppendLine($"模型: {model.DisplayName} ({model.Id})");
+        sb.AppendLine($"  {model.Description}");
         sb.AppendLine();
-        sb.AppendLine("演化（关键）：TotalBirths(t) 不外推为常数,");
+        sb.AppendLine("演化（共同）：TotalBirths(t) 不外推为常数,");
         sb.AppendLine("  改由 CCM 从 ASFR(t) × Female_15-49(t) 派生.");
         sb.AppendLine("  → 1990s-2010s 缩小队列进入育龄段时, births 自然下降.");
         sb.AppendLine();
@@ -398,6 +409,23 @@ public partial class MainViewModel : ObservableObject
     {
         SyncEditFieldsFromInputs();
         OnPropertyChanged(nameof(IsCounterfactualScenario));
+        // 同步模型选择，不触发 OnSelectedForecastModelIdChanged（避免重跑）
+        if (value != null && value.ForecastModelId != selectedForecastModelId)
+        {
+            selectedForecastModelId = value.ForecastModelId;
+            OnPropertyChanged(nameof(SelectedForecastModelId));
+        }
+        NotifyDerived();
+    }
+
+    partial void OnSelectedForecastModelIdChanged(string value)
+    {
+        if (ActiveScenario == null) return;
+        ActiveScenario.ForecastModelId = value;
+        RunProjectionForScenario(ActiveScenario, LockToHistory);
+        var m = ForecastRegistry.Resolve(value);
+        AppendLog($"切换预测模型 → {m.DisplayName}");
+        ProjectionStamp++;
         NotifyDerived();
     }
 

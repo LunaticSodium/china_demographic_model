@@ -133,6 +133,30 @@
                     </StackPanel>
                 </Border>
 
+                <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+                    <StackPanel>
+                        <TextBlock Text="预测模型" Style="{StaticResource SectionHeader}"/>
+                        <ListBox ItemsSource="{Binding AllForecastModels}"
+                                 SelectedValue="{Binding SelectedForecastModelId, Mode=TwoWay}"
+                                 SelectedValuePath="Id"
+                                 BorderThickness="0" Background="Transparent"
+                                 MaxHeight="240">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,2,0,4">
+                                        <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding Description}"
+                                                   Style="{StaticResource SubtitleText}"
+                                                   Margin="0,1,0,0"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <TextBlock Style="{StaticResource SubtitleText}" Margin="0,4,0,0"
+                                   Text="模型仅作用于 > 2025 的预测年。观测年由 NBS / 民政部 数据锁定。"/>
+                    </StackPanel>
+                </Border>
+
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
                         <TextBlock Text="数据健康" Style="{StaticResource SectionHeader}"/>
