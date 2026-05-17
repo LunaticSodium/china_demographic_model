@@ -11,7 +11,7 @@
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
             <TextBlock Text="输入编辑 · " Style="{StaticResource SectionHeader}" VerticalAlignment="Center"/>
             <TextBlock Text="{Binding CurrentYear}" Foreground="{StaticResource AccentPrimaryBrush}"
-                       FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                       FontSize="{StaticResource FontSize.Body}" FontWeight="SemiBold" VerticalAlignment="Center"/>
             <TextBlock Style="{StaticResource SubtitleText}" VerticalAlignment="Center" Margin="12,0,0,0"
                        Text="修改当前年的输入向量。锁定历史模式下，对已观测年的总出生数 / 性别比 会在 Run 时被强制还原。"/>
         </StackPanel>
@@ -38,39 +38,39 @@
                             <TextBlock Text="当年总出生数（万人）" Style="{StaticResource MetricLabel}"/>
                             <Slider Minimum="0" Maximum="3500" SmallChange="10" LargeChange="100"
                                     Value="{Binding EditBirthsWan, Mode=TwoWay}" Margin="0,4,0,2"/>
-                            <TextBlock Text="{Binding EditBirthsWan, StringFormat={}{0:0}}" Foreground="{StaticResource AccentPrimaryBrush}" FontSize="14"/>
+                            <TextBlock Text="{Binding EditBirthsWan, StringFormat={}{0:0}}" Foreground="{StaticResource AccentPrimaryBrush}" FontSize="{StaticResource FontSize.Body}"/>
                         </StackPanel>
                         <StackPanel Grid.Row="1" Grid.Column="1" Margin="12,0,0,12">
                             <TextBlock Text="出生性别比（男/100女）" Style="{StaticResource MetricLabel}"/>
                             <Slider Minimum="95" Maximum="125" SmallChange="0.1" LargeChange="1"
                                     Value="{Binding EditSrb, Mode=TwoWay}" Margin="0,4,0,2"/>
-                            <TextBlock Text="{Binding EditSrb, StringFormat={}{0:0.0}}" Foreground="{StaticResource AccentPrimaryBrush}" FontSize="14"/>
+                            <TextBlock Text="{Binding EditSrb, StringFormat={}{0:0.0}}" Foreground="{StaticResource AccentPrimaryBrush}" FontSize="{StaticResource FontSize.Body}"/>
                         </StackPanel>
 
                         <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,12,12">
                             <TextBlock Text="总和生育率 TFR" Style="{StaticResource MetricLabel}"/>
                             <Slider Minimum="0.5" Maximum="6.5" SmallChange="0.01" LargeChange="0.1"
                                     Value="{Binding EditTfr, Mode=TwoWay}" Margin="0,4,0,2"/>
-                            <TextBlock Text="{Binding EditTfr, StringFormat={}{0:0.00}}" Foreground="{StaticResource AccentPrimaryBrush}" FontSize="14"/>
+                            <TextBlock Text="{Binding EditTfr, StringFormat={}{0:0.00}}" Foreground="{StaticResource AccentPrimaryBrush}" FontSize="{StaticResource FontSize.Body}"/>
                         </StackPanel>
                         <StackPanel Grid.Row="2" Grid.Column="1" Margin="12,0,0,12">
                             <TextBlock Text="粗结婚率（‰）" Style="{StaticResource MetricLabel}"/>
                             <Slider Minimum="0" Maximum="14" SmallChange="0.05" LargeChange="0.5"
                                     Value="{Binding EditMarriageRate, Mode=TwoWay}" Margin="0,4,0,2"/>
-                            <TextBlock Text="{Binding EditMarriageRate, StringFormat={}{0:0.00}}" Foreground="{StaticResource AccentPrimaryBrush}" FontSize="14"/>
+                            <TextBlock Text="{Binding EditMarriageRate, StringFormat={}{0:0.00}}" Foreground="{StaticResource AccentPrimaryBrush}" FontSize="{StaticResource FontSize.Body}"/>
                         </StackPanel>
 
                         <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,12,12">
                             <TextBlock Text="平均初婚年龄（男）" Style="{StaticResource MetricLabel}"/>
                             <Slider Minimum="18" Maximum="40" SmallChange="0.1" LargeChange="1"
                                     Value="{Binding EditMafmMale, Mode=TwoWay}" Margin="0,4,0,2"/>
-                            <TextBlock Text="{Binding EditMafmMale, StringFormat={}{0:0.0}}" Foreground="{StaticResource AccentPrimaryBrush}" FontSize="14"/>
+                            <TextBlock Text="{Binding EditMafmMale, StringFormat={}{0:0.0}}" Foreground="{StaticResource AccentPrimaryBrush}" FontSize="{StaticResource FontSize.Body}"/>
                         </StackPanel>
                         <StackPanel Grid.Row="3" Grid.Column="1" Margin="12,0,0,12">
                             <TextBlock Text="平均初婚年龄（女）" Style="{StaticResource MetricLabel}"/>
                             <Slider Minimum="18" Maximum="40" SmallChange="0.1" LargeChange="1"
                                     Value="{Binding EditMafmFemale, Mode=TwoWay}" Margin="0,4,0,2"/>
-                            <TextBlock Text="{Binding EditMafmFemale, StringFormat={}{0:0.0}}" Foreground="{StaticResource AccentPrimaryBrush}" FontSize="14"/>
+                            <TextBlock Text="{Binding EditMafmFemale, StringFormat={}{0:0.0}}" Foreground="{StaticResource AccentPrimaryBrush}" FontSize="{StaticResource FontSize.Body}"/>
                         </StackPanel>
 
                         <Border Grid.Row="4" Grid.ColumnSpan="2" CornerRadius="8" Padding="12,8"

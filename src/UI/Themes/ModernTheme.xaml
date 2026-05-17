@@ -44,47 +44,69 @@
     <SolidColorBrush x:Key="ForecastBrush" Color="{StaticResource Forecast}"/>
     <SolidColorBrush x:Key="CensusBrush" Color="{StaticResource Census}"/>
 
-    <FontFamily x:Key="UiFont">Segoe UI, Microsoft YaHei UI, PingFang SC, Noto Sans CJK SC, sans-serif</FontFamily>
+    <!-- 字体栈：Win11 Segoe UI Variable 优先；Win10 fallback Segoe UI；中文 fallback Microsoft YaHei UI；Mac fallback PingFang SC -->
+    <FontFamily x:Key="UiFont">Segoe UI Variable, Segoe UI, Microsoft YaHei UI, PingFang SC, Noto Sans CJK SC, sans-serif</FontFamily>
+    <FontFamily x:Key="MonoFont">Consolas, Cascadia Mono, Microsoft YaHei UI, monospace</FontFamily>
+
+    <!-- 字号 token (对照 Fluent Design type ramp, 数据密集型应用略压缩)
+         参 https://learn.microsoft.com/en-us/windows/apps/design/signature-experiences/typography
+         Fluent: Caption=12 / Body=14 / Subtitle=20 / Title=28
+         本应用: Caption=12 / Body=14 / Section=12-SB / TitleText=20-SB / MetricValue=26-Light -->
+    <sys:Double x:Key="FontSize.Caption">12</sys:Double>
+    <sys:Double x:Key="FontSize.Body">14</sys:Double>
+    <sys:Double x:Key="FontSize.Section">12</sys:Double>
+    <sys:Double x:Key="FontSize.SubtitleHeader">20</sys:Double>
+    <sys:Double x:Key="FontSize.MetricLabel">11</sys:Double>
+    <sys:Double x:Key="FontSize.MetricValue">26</sys:Double>
+
+    <!-- 描边 / 间距 token -->
+    <sys:Double x:Key="Stroke.Thin">1</sys:Double>
+    <sys:Double x:Key="Stroke.Medium">2</sys:Double>
+    <CornerRadius x:Key="Radius.Card">12</CornerRadius>
+    <CornerRadius x:Key="Radius.Control">8</CornerRadius>
+    <CornerRadius x:Key="Radius.Chip">4</CornerRadius>
 
     <!-- 全局默认值 -->
     <Style TargetType="{x:Type Window}">
         <Setter Property="Background" Value="{StaticResource BgBaseBrush}"/>
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
         <Setter Property="FontFamily" Value="{StaticResource UiFont}"/>
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Body}"/>
         <Setter Property="TextOptions.TextFormattingMode" Value="Ideal"/>
         <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
+        <Setter Property="UseLayoutRounding" Value="True"/>
     </Style>
 
     <Style TargetType="{x:Type TextBlock}">
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
         <Setter Property="FontFamily" Value="{StaticResource UiFont}"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Body}"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
     </Style>
 
     <Style x:Key="TitleText" TargetType="{x:Type TextBlock}">
-        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSize.SubtitleHeader}"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
     </Style>
     <Style x:Key="SubtitleText" TargetType="{x:Type TextBlock}">
-        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Caption}"/>
         <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
     </Style>
     <Style x:Key="SectionHeader" TargetType="{x:Type TextBlock}">
-        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Section}"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
-        <Setter Property="Margin" Value="0,0,0,6"/>
+        <Setter Property="Margin" Value="0,0,0,8"/>
     </Style>
     <Style x:Key="MetricValue" TargetType="{x:Type TextBlock}">
-        <Setter Property="FontSize" Value="22"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSize.MetricValue}"/>
         <Setter Property="FontWeight" Value="Light"/>
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
     </Style>
     <Style x:Key="MetricLabel" TargetType="{x:Type TextBlock}">
-        <Setter Property="FontSize" Value="10"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSize.MetricLabel}"/>
         <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
         <Setter Property="Margin" Value="0,0,0,2"/>
     </Style>
@@ -112,7 +134,7 @@
         <Setter Property="Padding" Value="14,7"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="FontFamily" Value="{StaticResource UiFont}"/>
-        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Body}"/>
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Template">
@@ -170,7 +192,7 @@
         <Setter Property="Padding" Value="14,7"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="FontFamily" Value="{StaticResource UiFont}"/>
-        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Body}"/>
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Template">
@@ -212,7 +234,7 @@
         <Setter Property="CaretBrush" Value="{StaticResource AccentPrimaryBrush}"/>
         <Setter Property="SelectionBrush" Value="{StaticResource AccentPrimaryBrush}"/>
         <Setter Property="FontFamily" Value="Consolas, Cascadia Mono, monospace"/>
-        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Body}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type TextBox}">
@@ -301,7 +323,7 @@
     <Style TargetType="{x:Type TabItem}">
         <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
         <Setter Property="Padding" Value="14,7"/>
-        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Body}"/>
         <Setter Property="FontFamily" Value="{StaticResource UiFont}"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Margin" Value="0"/>
@@ -396,7 +418,7 @@
     <Style TargetType="{x:Type CheckBox}">
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
         <Setter Property="FontFamily" Value="{StaticResource UiFont}"/>
-        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSize.Body}"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
     </Style>
 

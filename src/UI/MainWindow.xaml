@@ -5,8 +5,8 @@
         xmlns:vm="clr-namespace:ChinaDemographicModel.UI.ViewModels"
         xmlns:controls="clr-namespace:ChinaDemographicModel.UI.Controls"
         Title="中国人口结构 · 反事实工具"
-        Width="1480" Height="900"
-        MinWidth="1100" MinHeight="700"
+        Width="1600" Height="980"
+        MinWidth="1200" MinHeight="760"
         WindowStartupLocation="CenterScreen"
         UseLayoutRounding="True"
         TextOptions.TextFormattingMode="Ideal"
@@ -66,8 +66,9 @@
                                          MinWidth="500"
                                          VerticalAlignment="Center"
                                          Margin="0,0,16,0"/>
-                    <TextBlock Grid.Column="2" Text="{Binding CurrentYear}" FontSize="22" FontWeight="Light"
-                               Foreground="{StaticResource AccentPrimaryBrush}" MinWidth="58"
+                    <TextBlock Grid.Column="2" Text="{Binding CurrentYear}"
+                               FontSize="{StaticResource FontSize.MetricValue}" FontWeight="Light"
+                               Foreground="{StaticResource AccentPrimaryBrush}" MinWidth="68"
                                VerticalAlignment="Center"/>
                 </Grid>
 
@@ -236,11 +237,11 @@
                         <TextBlock Text="数据来源 / 引用" Style="{StaticResource SectionHeader}"/>
                         <TextBlock Text="{Binding CitationText}"
                                    Foreground="{StaticResource TextSecondaryBrush}"
-                                   FontFamily="Consolas, Cascadia Mono, monospace"
-                                   FontSize="10"
+                                   FontFamily="{StaticResource MonoFont}"
+                                   FontSize="11"
                                    TextWrapping="Wrap"
-                                   LineHeight="14"
-                                   MaxHeight="260"/>
+                                   LineHeight="16"
+                                   MaxHeight="280"/>
                     </StackPanel>
                 </Border>
             </StackPanel>
