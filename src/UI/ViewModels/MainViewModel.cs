@@ -223,7 +223,23 @@ public partial class MainViewModel : ObservableObject
     public string TotalPopulationDisplay => FormatPersons(CurrentPyramid?.Total);
     public string BirthsDisplay => FormatPersons(GetInput()?.TotalBirths);
     public string SrbDisplay => GetInput() is { } i ? i.SexRatioAtBirth.ToString("0.0") : "—";
-    public string TfrDisplay => GetInput() is { } i ? i.TotalFertilityRate.ToString("0.00") : "—";
+    public string TfrDisplay
+    {
+        get
+        {
+            // 观测年：优先 NBS / 普查公布的 TFR (tfr_yearly.csv 锚点 / 邻近插值)。
+            // 内部 Calibrator 把 model ASFR 缩放使模型出生 = NBS 观测；这导致 sum(model ASFR)
+            // ≠ 公布 TFR (model 的 Female_15-49 与七普实际有~12% 量级差)。
+            // 显示层走 CSV 是为了"插值在锚点给出锚点值"的一致性。
+            if (Historical != null)
+            {
+                double? tfr = TryInterp(Historical.TfrByYear, CurrentYear);
+                if (tfr != null) return tfr.Value.ToString("0.00");
+            }
+            // 预测年 / 无 CSV 数据时回退到模型派生
+            return GetInput() is { } i ? i.TotalFertilityRate.ToString("0.00") : "—";
+        }
+    }
     public string MafmMaleDisplay => GetInput() is { } i ? i.MeanAgeFirstMarriageMale.ToString("0.0") : "—";
     public string MafmFemaleDisplay => GetInput() is { } i ? i.MeanAgeFirstMarriageFemale.ToString("0.0") : "—";
     public string MarriageRateDisplay => GetInput() is { } i ? i.CrudeMarriageRate.ToString("0.0") : "—";
