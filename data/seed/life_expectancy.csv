@@ -8,7 +8,7 @@
 #   官方口径未承认明显回落；以 NBS 估计为下限。
 year,e0_overall,e0_male,e0_female,source
 1978,65.5,64.0,67.0,who_estimate
-1981,67.77,66.43,69.27,census_3rd
+1982,67.77,66.43,69.27,census_3rd_1981_table_attached_to_census_year
 1985,68.92,67.40,70.45,who_estimate
 1990,68.55,66.84,70.47,census_4th
 1995,70.10,68.20,72.10,who_estimate

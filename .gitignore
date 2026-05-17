@@ -6,6 +6,7 @@ obj/
 *.cache
 *.lock.json
 TestResults/
+release_stage/
 
 # 大型参考 PDF 不入仓库 —— 见 docs/references/README.md 下载指引
 docs/references/*.pdf
