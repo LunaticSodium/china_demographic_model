@@ -1,0 +1,27 @@
+# 粗结婚率（每千人）—— 民政部社会服务发展统计公报
+# Caveat: 2003 之前数据稀疏且口径有变；2020+ 部分受疫情登记延迟影响；
+#   分母用年中人口，部分年度调整过；离婚冷静期 2021 实施后结婚 / 离婚率均下行。
+year,crude_rate_per_1000,source
+2002,6.10,moca_bulletin
+2003,6.30,moca_bulletin
+2004,6.65,moca_bulletin
+2005,6.30,moca_bulletin
+2006,7.19,moca_bulletin
+2007,7.50,moca_bulletin
+2008,8.27,moca_bulletin
+2009,9.10,moca_bulletin
+2010,9.30,moca_bulletin
+2011,9.70,moca_bulletin
+2012,9.78,moca_bulletin
+2013,9.92,moca_bulletin,peak
+2014,9.60,moca_bulletin
+2015,9.00,moca_bulletin
+2016,8.30,moca_bulletin
+2017,7.70,moca_bulletin
+2018,7.20,moca_bulletin
+2019,6.60,moca_bulletin
+2020,5.80,moca_bulletin
+2021,5.40,moca_bulletin
+2022,4.80,moca_bulletin
+2023,5.40,moca_bulletin,rebound
+2024,4.30,moca_partial

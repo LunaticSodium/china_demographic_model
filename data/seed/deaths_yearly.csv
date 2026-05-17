@@ -1,0 +1,54 @@
+# 中国年度死亡人口（单位：万人）
+# 数据口径来源：国家统计局《中国统计年鉴》历年
+# Caveat: 2023 年 1110 万死亡数公布后引起较多讨论 —— 包含 2022-12 至 2023-01 COVID-19
+#   感染高峰期的超额死亡；NBS 数据反映了部分超额，但与国际学者（如 Airfinity、IHME）
+#   估计的 2022-12/2023-01 超额死亡上限相比仍偏低。建议作为下限处理。
+# 列：year, total_deaths_wan, source_code, note
+year,total_deaths_wan,source_code,note
+1978,600,nbs_yearbook,
+1979,605,nbs_yearbook,
+1980,627,nbs_yearbook,
+1981,631,nbs_yearbook,三普
+1982,666,nbs_yearbook,
+1983,671,nbs_yearbook,
+1984,689,nbs_yearbook,
+1985,708,nbs_yearbook,
+1986,723,nbs_yearbook,
+1987,729,nbs_yearbook,
+1988,729,nbs_yearbook,
+1989,738,nbs_yearbook,
+1990,763,nbs_yearbook,四普
+1991,753,nbs_yearbook,
+1992,764,nbs_yearbook,
+1993,765,nbs_yearbook,
+1994,770,nbs_yearbook,
+1995,792,nbs_yearbook,
+1996,799,nbs_yearbook,
+1997,801,nbs_yearbook,
+1998,807,nbs_yearbook,
+1999,809,nbs_yearbook,
+2000,813,nbs_yearbook,五普
+2001,818,nbs_yearbook,
+2002,821,nbs_yearbook,
+2003,825,nbs_yearbook,
+2004,832,nbs_yearbook,
+2005,849,nbs_yearbook,
+2006,892,nbs_yearbook,
+2007,913,nbs_yearbook,
+2008,935,nbs_yearbook,5.12 汶川地震 ~7 万计入
+2009,943,nbs_yearbook,
+2010,953,nbs_yearbook,六普
+2011,960,nbs_yearbook,
+2012,966,nbs_yearbook,
+2013,972,nbs_yearbook,
+2014,977,nbs_yearbook,
+2015,975,nbs_yearbook,
+2016,977,nbs_yearbook,
+2017,986,nbs_yearbook,
+2018,993,nbs_yearbook,
+2019,998,nbs_yearbook,
+2020,998,nbs_yearbook,七普
+2021,1014,nbs_yearbook,
+2022,1041,nbs_yearbook,2022-12 起 COVID 解封超额
+2023,1110,nbs_yearbook,COVID 超额死亡，国际估计上限更高
+2024,1093,nbs_yearbook,

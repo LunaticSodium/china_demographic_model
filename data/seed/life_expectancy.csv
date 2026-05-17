@@ -1,0 +1,24 @@
+# 中国出生时预期寿命 e0（年）
+# 数据：五次普查直接公布 + WHO/NBS 非普查年估计
+# 列：year, e0_overall, e0_male, e0_female, source
+# Caveat:
+# - 普查年（1981/1990/2000/2010/2020）为生命表直接产出，可靠度最高；
+# - 非普查年为 WHO Global Health Observatory / NBS 估计，存在 ±0.5 年波动；
+# - 2020-2023 受 COVID 影响，部分独立学者推算 2023 e0 相对 2019 下降 0.5-1 年，
+#   官方口径未承认明显回落；以 NBS 估计为下限。
+year,e0_overall,e0_male,e0_female,source
+1978,65.5,64.0,67.0,who_estimate
+1981,67.77,66.43,69.27,census_3rd
+1985,68.92,67.40,70.45,who_estimate
+1990,68.55,66.84,70.47,census_4th
+1995,70.10,68.20,72.10,who_estimate
+2000,71.40,69.63,73.33,census_5th
+2005,73.05,71.20,74.95,who_estimate
+2010,74.83,72.38,77.37,census_6th
+2015,76.34,74.00,78.80,nbs_estimate
+2019,77.30,74.80,79.85,nbs_estimate
+2020,77.93,75.37,80.88,census_7th
+2021,78.20,75.65,81.20,nbs_estimate
+2022,77.93,75.20,80.85,nbs_estimate,COVID 拖累
+2023,78.20,75.50,81.10,nbs_estimate
+2024,78.60,75.90,81.50,nbs_estimate

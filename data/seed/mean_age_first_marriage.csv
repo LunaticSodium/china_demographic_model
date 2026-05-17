@@ -1,0 +1,9 @@
+# 平均初婚年龄 —— 主要来自历次普查
+# Caveat: 仅普查年份可靠；非普查年由 ScenarioBuilder 线性插值。
+#   2020 普查后中国平均初婚年龄首次超过 28 岁（女），晚婚化是长期趋势。
+year,male,female,source
+1982,25.1,22.4,census_3rd_estimate
+1990,23.59,22.02,census_4th
+2000,25.10,23.17,census_5th
+2010,25.86,23.89,census_6th
+2020,29.38,27.95,census_7th

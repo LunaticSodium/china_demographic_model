@@ -1,0 +1,54 @@
+# 中国年度出生人口（单位：万人）
+# 数据口径来源：国家统计局历年《中国统计年鉴》/ 人口与计划生育公报
+# Caveat: 1949-2010 NBS 年度估计与七普回溯校正存在 ±100 万级差；2017+ 受
+#   全面二孩、三孩政策、瞒报奖励变化、户籍登记口径调整影响，部分独立学者认为 2016-2019
+#   被高估、2020+ 接近真实。本表为公开口径，用于建模 baseline，不代表"真实出生数"。
+# 列：year, total_births_wan, source_code, note
+year,total_births_wan,source_code,note
+1978,1733,nbs_yearbook,
+1979,1715,nbs_yearbook,
+1980,1776,nbs_yearbook,
+1981,2064,nbs_yearbook,三普校正
+1982,2247,nbs_yearbook,三普
+1983,2065,nbs_yearbook,
+1984,2050,nbs_yearbook,
+1985,2196,nbs_yearbook,
+1986,2374,nbs_yearbook,
+1987,2508,nbs_yearbook,1980s 出生峰
+1988,2445,nbs_yearbook,
+1989,2407,nbs_yearbook,
+1990,2374,nbs_yearbook,四普
+1991,2250,nbs_yearbook,
+1992,2113,nbs_yearbook,
+1993,2120,nbs_yearbook,
+1994,2098,nbs_yearbook,
+1995,2052,nbs_yearbook,
+1996,2057,nbs_yearbook,
+1997,2028,nbs_yearbook,
+1998,1934,nbs_yearbook,
+1999,1827,nbs_yearbook,陆学艺 2002 表14 终点
+2000,1771,nbs_yearbook,五普
+2001,1696,nbs_yearbook,
+2002,1641,nbs_yearbook,
+2003,1594,nbs_yearbook,
+2004,1588,nbs_yearbook,
+2005,1612,nbs_yearbook,1%抽样
+2006,1581,nbs_yearbook,
+2007,1591,nbs_yearbook,
+2008,1604,nbs_yearbook,
+2009,1587,nbs_yearbook,
+2010,1588,nbs_yearbook,六普
+2011,1600,nbs_yearbook,
+2012,1635,nbs_yearbook,
+2013,1640,nbs_yearbook,单独二孩前
+2014,1687,nbs_yearbook,
+2015,1655,nbs_yearbook,
+2016,1786,nbs_yearbook,全面二孩首年
+2017,1723,nbs_yearbook,
+2018,1523,nbs_yearbook,
+2019,1465,nbs_yearbook,
+2020,1200,nbs_yearbook,七普
+2021,1062,nbs_yearbook,三孩政策启动
+2022,956,nbs_yearbook,首次跌破1000万
+2023,902,nbs_yearbook,
+2024,954,nbs_yearbook,统计局 2025-01 公布
