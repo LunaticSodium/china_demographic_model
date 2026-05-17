@@ -4,13 +4,17 @@
         xmlns:views="clr-namespace:ChinaDemographicModel.UI.Views"
         xmlns:vm="clr-namespace:ChinaDemographicModel.UI.ViewModels"
         xmlns:controls="clr-namespace:ChinaDemographicModel.UI.Controls"
-        Title="中国人口结构 · 反事实工具"
+        Title="中国人口结构 · 工作台"
         Width="1600" Height="980"
         MinWidth="1200" MinHeight="760"
         WindowStartupLocation="CenterScreen"
         UseLayoutRounding="True"
         TextOptions.TextFormattingMode="Ideal"
-        TextOptions.TextRenderingMode="ClearType">
+        TextOptions.TextRenderingMode="ClearType"
+        Background="{StaticResource BgBaseBrush}"
+        Foreground="{StaticResource TextPrimaryBrush}"
+        FontFamily="{StaticResource UiFont}"
+        FontSize="{StaticResource FontSize.Body}">
 
     <Window.DataContext>
         <vm:MainViewModel />
@@ -35,7 +39,7 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Orientation="Vertical">
-                    <TextBlock Text="中国人口结构 · 反事实工具" Style="{StaticResource TitleText}"/>
+                    <TextBlock Text="中国人口结构 · 工作台" Style="{StaticResource TitleText}"/>
                     <TextBlock Text="Cohort-Component projection · 历史一致性约束 · 反事实推演"
                                Style="{StaticResource SubtitleText}" Margin="0,2,0,0"/>
                 </StackPanel>

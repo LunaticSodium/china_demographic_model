@@ -125,7 +125,8 @@ public partial class PyramidView : UserControl
     {
         if (e.PropertyName is nameof(MainViewModel.CurrentPyramid)
             or nameof(MainViewModel.CurrentYear)
-            or nameof(MainViewModel.BaselinePyramid))
+            or nameof(MainViewModel.BaselinePyramid)
+            or nameof(MainViewModel.PyramidMaxPerAge))
         {
             Dispatcher.BeginInvoke(new Action(Redraw));
         }
@@ -148,13 +149,18 @@ public partial class PyramidView : UserControl
         int maxAge = PopulationPyramid.MaxAge;
         double rowH = h / (maxAge + 1);
 
-        // find horizontal max
-        double maxVal = 0;
-        for (int a = 0; a <= maxAge; a++)
+        // X 轴用**固定**刻度（跨所有 scenario × year × age × sex 的全局最大），让用户拖年份时
+        // 不会被浮动刻度误导。VM 在 RunProjectionForScenario 完成时算并暴露 PyramidMaxPerAge。
+        // 仅当 VM 尚未算出时退到 per-year max。
+        double maxVal = _vm.PyramidMaxPerAge;
+        if (maxVal <= 0)
         {
-            maxVal = Math.Max(maxVal, Math.Max(p.Male[a], p.Female[a]));
-            if (baseline != null && baseline != p)
-                maxVal = Math.Max(maxVal, Math.Max(baseline.Male[a], baseline.Female[a]));
+            for (int a = 0; a <= maxAge; a++)
+            {
+                maxVal = Math.Max(maxVal, Math.Max(p.Male[a], p.Female[a]));
+                if (baseline != null && baseline != p)
+                    maxVal = Math.Max(maxVal, Math.Max(baseline.Male[a], baseline.Female[a]));
+            }
         }
         if (maxVal <= 0) maxVal = 1;
 

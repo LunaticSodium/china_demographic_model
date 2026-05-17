@@ -57,6 +57,7 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private double editMafmFemale = 24;
     [ObservableProperty] private string editHint = "选择年份并修改滑条，点'应用到当前年'。";
     [ObservableProperty] private SeriesGroup selectedSeriesGroup = SeriesGroup.TenThousandPeople;
+    [ObservableProperty] private double pyramidMaxPerAge;  // 跨所有 scenario + year 的最大单龄人数，X 轴固定刻度
 
     public MainViewModel()
     {
@@ -131,6 +132,27 @@ public partial class MainViewModel : ObservableObject
             scen.ProjectedByYear[next.Year] = next;
             cur = next;
         }
+
+        RecomputePyramidMax();
+    }
+
+    /// 计算所有 scenario × year × age × sex 的最大单龄人数。
+    /// 用作 PyramidView X 轴的**固定刻度**，让跨年比较视觉可比。
+    private void RecomputePyramidMax()
+    {
+        double m = 0;
+        foreach (var scen in Scenarios)
+        {
+            foreach (var (_, p) in scen.ProjectedByYear)
+            {
+                for (int a = 0; a <= PopulationPyramid.MaxAge; a++)
+                {
+                    if (p.Male[a] > m) m = p.Male[a];
+                    if (p.Female[a] > m) m = p.Female[a];
+                }
+            }
+        }
+        PyramidMaxPerAge = m;
     }
 
     public PopulationPyramid? CurrentPyramid
@@ -265,19 +287,23 @@ public partial class MainViewModel : ObservableObject
     private string BuildForecastCitation(int y)
     {
         var sb = new System.Text.StringBuilder();
-        sb.AppendLine($"外推 · {y} 年 (后 NBS 观测期 {LastObservedYear})");
+        int last = LastObservedYear;
+        int dy = y - last;
+        sb.AppendLine($"预测 · {y} 年 (后 NBS 观测期 {last})");
         sb.AppendLine();
-        sb.AppendLine("外推规则 (LookupOrInterp last-value-constant):");
-        sb.AppendLine($"  TotalBirths(t) = TotalBirths({LastObservedYear}) 定值");
-        sb.AppendLine($"  SRB / MAFM / CrudeMarriageRate / e0 同上");
+        sb.AppendLine("ForecastModel 投影 (Core/Engine/ForecastModel.cs):");
+        sb.AppendLine($"  TFR(t)  = max(0.85, 1.00 − 0.005·Δt)  [Δt = {dy}]");
+        sb.AppendLine($"  e0(t)   = min(86, e0({last}) + 0.12·Δt)");
+        sb.AppendLine($"  SRB(t)  = 105.5 + (SRB({last}) − 105.5)·exp(−ln2/18·Δt)");
+        sb.AppendLine($"  MAFM(t) = min(33男 / 31女, MAFM({last}) + 0.10·Δt)");
+        sb.AppendLine($"  婚率(t) = 3.0 + (婚率({last}) − 3.0)·exp(−ln2/20·Δt)");
         sb.AppendLine();
-        sb.AppendLine("演化:");
-        sb.AppendLine("  CCM 同 NBS 估算年;");
-        sb.AppendLine("  q(a,s,t) ← CensusLifeTables[2020] + Brass shift 到 e0(t).");
+        sb.AppendLine("演化（关键）：TotalBirths(t) 不外推为常数,");
+        sb.AppendLine("  改由 CCM 从 ASFR(t) × Female_15-49(t) 派生.");
+        sb.AppendLine("  → 1990s-2010s 缩小队列进入育龄段时, births 自然下降.");
         sb.AppendLine();
-        sb.AppendLine("约束放松:");
-        sb.AppendLine("  · 无 NBS 年末对齐 (PopulationAlignment 跳过)");
-        sb.AppendLine("  · 无观测复位 → 输入完全外推或来自反事实编辑");
+        sb.AppendLine("q(a,s,t) ← CensusLifeTables[2020] + Brass shift 到 e0(t).");
+        sb.AppendLine("无 NBS 对齐 / 无观测复位 → 预测自由演化.");
 
         if (IsCounterfactualScenario && ActiveScenario != null && ActiveScenario.EditedYears.Contains(y))
         {
