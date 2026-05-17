@@ -10,3 +10,9 @@ TestResults/
 # 大型参考 PDF 不入仓库 —— 见 docs/references/README.md 下载指引
 docs/references/*.pdf
 
+# 临时 commit message 文件
+.commit_msg.tmp
+
+# 调试输出
+debug_*.txt
+
