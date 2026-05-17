@@ -65,8 +65,10 @@ public partial class MainViewModel : ObservableObject
             var seedDir = SeedLoader.ResolveSeedDir();
             Historical = HistoricalSeries.LoadFromSeedDir(seedDir);
             AppendLog($"种子目录: {seedDir}");
-            AppendLog($"出生年份: {Historical.BirthsByYear.Count} 年");
-            AppendLog($"普查金字塔: {Historical.CensusPyramidByYear.Count} 个");
+            // 显式 sanity check —— 任一关键字典为空都立刻可见，避免 round 3 那种
+            // silent empty-dict bug 再次潜伏。
+            AppendLog($"数据载入: 出生{Historical.BirthsByYear.Count} 死亡{Historical.DeathsByYear.Count} 年末人口{Historical.TotalPopulationYearEndByYear.Count} SRB{Historical.SexRatioAtBirthByYear.Count} 结婚率{Historical.CrudeMarriageRateByYear.Count} 万对{Historical.MarriagesByYear.Count} 平均初婚{Historical.MeanAgeFirstMarriageMaleByYear.Count}");
+            AppendLog($"e0载入: 整体{Historical.E0OverallByYear.Count} 男{Historical.E0MaleByYear.Count} 女{Historical.E0FemaleByYear.Count}  · 普查金字塔: {string.Join(",", Historical.CensusPyramidByYear.Keys.OrderBy(k => k))}");
         }
         catch (Exception ex)
         {

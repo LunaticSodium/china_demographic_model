@@ -41,8 +41,27 @@ public static class SeedLoader
     {
         var lines = File.ReadAllLines(path);
         if (lines.Length < 2) yield break;
-        var header = SplitCsv(lines[0]).Select(h => h.Trim().ToLowerInvariant()).ToArray();
-        for (int i = 1; i < lines.Length; i++)
+
+        // 找到第一行非 # 注释、非空白行作为 header。
+        // 之前的实现把 lines[0] 当 header，结果所有 CSV 顶部的 # 注释块把 header 识别错了，
+        // 导致所有 data 字典加载为空——这是 round 1-3 隐藏的致命 bug，
+        // 只在 round 3 用户报告"2024 显示 12亿"时才暴露。
+        int headerIdx = -1;
+        for (int i = 0; i < lines.Length; i++)
+        {
+            var raw = lines[i];
+            if (string.IsNullOrWhiteSpace(raw) || raw.TrimStart().StartsWith("#")) continue;
+            headerIdx = i;
+            break;
+        }
+        if (headerIdx < 0) yield break;
+
+        // 移除 UTF-8 BOM（如有）
+        var headerLine = lines[headerIdx];
+        if (headerLine.Length > 0 && headerLine[0] == '﻿') headerLine = headerLine.Substring(1);
+
+        var header = SplitCsv(headerLine).Select(h => h.Trim().ToLowerInvariant()).ToArray();
+        for (int i = headerIdx + 1; i < lines.Length; i++)
         {
             var raw = lines[i];
             if (string.IsNullOrWhiteSpace(raw) || raw.TrimStart().StartsWith("#")) continue;
