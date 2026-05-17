@@ -183,7 +183,17 @@
 
             <!-- RIGHT -->
             <StackPanel Grid.Column="2" Margin="16,0,0,0">
-                <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+                <Border Margin="0,0,0,14">
+                    <Border.Style>
+                        <Style TargetType="Border" BasedOn="{StaticResource Card}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsCurrentYearForecast}" Value="True">
+                                    <Setter Property="BorderBrush" Value="{StaticResource ForecastBrush}"/>
+                                    <Setter Property="BorderThickness" Value="2"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -200,7 +210,7 @@
                         </Grid.ColumnDefinitions>
 
                         <TextBlock Grid.Row="0" Grid.ColumnSpan="2"
-                                   Text="当前年指标" Style="{StaticResource SectionHeader}"/>
+                                   Text="{Binding CurrentYearMetricsHeader}" Style="{StaticResource SectionHeader}"/>
 
                         <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,6,8,10">
                             <TextBlock Text="总人口" Style="{StaticResource MetricLabel}"/>

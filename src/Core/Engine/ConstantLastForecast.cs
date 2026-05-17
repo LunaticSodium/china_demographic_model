@@ -9,7 +9,7 @@ public sealed class ConstantLastForecast : ForecastModelBase
     public override string DisplayName => "末值常数";
     public override string Description => "所有变量 (TFR / SRB / MAFM / e0 / 婚率) 保持最后观测年的值";
 
-    protected override ForecastedScalars ProjectScalars(int year, ForecastContext ctx) =>
+    public override ForecastedScalars ProjectScalars(int year, ForecastContext ctx) =>
         new()
         {
             Tfr = ctx.LastTfr,

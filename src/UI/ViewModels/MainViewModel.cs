@@ -42,6 +42,20 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    public bool IsCurrentYearForecast => Historical != null && CurrentYear > LastObservedYear;
+
+    public string CurrentYearMetricsHeader =>
+        IsCurrentYearForecast ? "当前年指标 · 模型预测" : "当前年指标";
+
+    /// 预测年的模型派生标量；非预测年返回 null。
+    private ForecastedScalars? GetCurrentForecastScalars()
+    {
+        if (!IsCurrentYearForecast || ActiveScenario == null || Historical == null) return null;
+        var ctx = ScenarioBuilder.BuildContext(ActiveScenario, Historical, _builder.Fertility);
+        var model = ForecastRegistry.Resolve(ActiveScenario.ForecastModelId);
+        return model.ProjectScalars(CurrentYear, ctx);
+    }
+
     [ObservableProperty] private Scenario? activeScenario;
     [ObservableProperty] private int currentYear = 2020;
     [ObservableProperty] private bool lockToHistory = true;
@@ -111,20 +125,24 @@ public partial class MainViewModel : ObservableObject
         var cur = initialAligned;
         for (int y = cur.Year; y < YearMax; y++)
         {
-            // 观测年: InputsByYear 已有；预测年: 若用户没编辑，由 model 即时生成；
-            //         若用户已编辑（ApplyEdits 写过），用用户编辑的值。
+            // 三个来源:
+            //   1) 用户编辑过的年 (在 EditedYears 集合内) → 用 scen.InputsByYear[y]
+            //   2) 观测年 (y ≤ lastObs) → 用 ScenarioBuilder 填好的 scen.InputsByYear[y]
+            //   3) 预测年未编辑 → model.Project(y, ctx)，并写入 InputsByYear 供 UI 显示
             DemographicInputs inp;
-            if (scen.InputsByYear.TryGetValue(y, out var existing))
+            bool isUserEdited = scen.EditedYears.Contains(y);
+            if (y > lastObs && !isUserEdited)
+            {
+                inp = forecastModel.Project(y, ctx);
+                scen.InputsByYear[y] = inp;
+            }
+            else if (scen.InputsByYear.TryGetValue(y, out var existing))
             {
                 inp = existing;
             }
-            else if (y > lastObs)
-            {
-                inp = forecastModel.Project(y, ctx);
-            }
             else
             {
-                break;  // 观测年缺数据 → 终止
+                break;
             }
 
             // 观测复位：仅对观测年（y ≤ lastObs）
@@ -134,6 +152,17 @@ public partial class MainViewModel : ObservableObject
                 if (Historical.SexRatioAtBirthByYear.TryGetValue(y, out var s)) inp.SexRatioAtBirth = s;
                 if (Historical.CrudeMarriageRateByYear.TryGetValue(y, out var m)) inp.CrudeMarriageRate = m;
                 _calibrator.AlignBirthsToHistory(inp, inp.TotalBirths, cur);
+            }
+
+            // 预测年: 若 TotalBirths 留 0，CCM 会从 ASFR × Female 派生；
+            //         同时把派生值写回 inp.TotalBirths 供 UI 显示（mutation 安全:
+            //         inp 是 model 即时生成的新实例）。
+            if (inp.TotalBirths <= 0)
+            {
+                double derived = 0;
+                for (int a = 15; a <= 49 && a <= PopulationPyramid.MaxAge; a++)
+                    derived += cur.Female[a] * inp.AgeSpecificFertility[a];
+                inp.TotalBirths = derived;
             }
 
             var next = _projector.Project(cur, inp);
@@ -202,8 +231,38 @@ public partial class MainViewModel : ObservableObject
     {
         get
         {
+            // 观测年：NBS 公布的当年死亡数
             if (Historical?.DeathsByYear.TryGetValue(CurrentYear, out var d) == true)
                 return FormatPersons(d);
+            // 预测年：模型派生 = Σ pyramid(a) × q(a)
+            if (IsCurrentYearForecast && ActiveScenario != null && CurrentPyramid is { } p
+                && ActiveScenario.InputsByYear.TryGetValue(CurrentYear, out var inp))
+            {
+                double deaths = 0;
+                for (int a = 0; a < PopulationPyramid.MaxAge; a++)
+                {
+                    deaths += p.Male[a] * inp.MortalityMale[a];
+                    deaths += p.Female[a] * inp.MortalityFemale[a];
+                }
+                return FormatPersons(deaths);
+            }
+            // 预测年但 inp 不在 InputsByYear (model 即时生成且未保存)：用 CurrentPyramid + 当前 forecast scalars 近似
+            if (IsCurrentYearForecast && CurrentPyramid is { } pp)
+            {
+                var scalars = GetCurrentForecastScalars();
+                if (scalars != null)
+                {
+                    var qM = CensusLifeTables.GetQx(CurrentYear, isMale: true, targetE0: scalars.E0M);
+                    var qF = CensusLifeTables.GetQx(CurrentYear, isMale: false, targetE0: scalars.E0F);
+                    double deaths = 0;
+                    for (int a = 0; a < PopulationPyramid.MaxAge; a++)
+                    {
+                        deaths += pp.Male[a] * qM[a];
+                        deaths += pp.Female[a] * qF[a];
+                    }
+                    return FormatPersons(deaths);
+                }
+            }
             return "—";
         }
     }
@@ -211,9 +270,15 @@ public partial class MainViewModel : ObservableObject
     {
         get
         {
+            // 预测年: 用模型派生的 e0
+            if (IsCurrentYearForecast)
+            {
+                var scalars = GetCurrentForecastScalars();
+                if (scalars != null)
+                    return $"M {scalars.E0M:0.0} / F {scalars.E0F:0.0}";
+            }
+            // 观测年: 邻近年线性插值（CSV 锚之间）
             if (Historical == null) return "—";
-            // 与 ScenarioBuilder 的 LookupOrInterp 一致：邻近年份线性插值
-            // （否则 1982 显 "—" 因为 CSV 锚是 1981 而非 1982）；预测年（无 before / after）仍显 "—"。
             double? eM = TryInterp(Historical.E0MaleByYear, CurrentYear);
             double? eF = TryInterp(Historical.E0FemaleByYear, CurrentYear);
             if (eM == null && eF == null) return "—";
@@ -444,6 +509,8 @@ public partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(E0Display));
         OnPropertyChanged(nameof(DeviationReport));
         OnPropertyChanged(nameof(CitationText));
+        OnPropertyChanged(nameof(IsCurrentYearForecast));
+        OnPropertyChanged(nameof(CurrentYearMetricsHeader));
     }
 
     [RelayCommand]

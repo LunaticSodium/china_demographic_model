@@ -22,7 +22,7 @@ public sealed class DampedTrendForecast : ForecastModelBase
     public override string DisplayName => "阻尼趋势";
     public override string Description => "线性 + 指数收敛到预设目标 (floor / ceiling), 防极端外推";
 
-    protected override ForecastedScalars ProjectScalars(int year, ForecastContext ctx)
+    public override ForecastedScalars ProjectScalars(int year, ForecastContext ctx)
     {
         int dy = year - ctx.LastObservedYear;
         return new ForecastedScalars

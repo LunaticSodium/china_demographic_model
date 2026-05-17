@@ -18,7 +18,7 @@ public sealed class OlsTrendForecast : ForecastModelBase
     private static readonly (double Floor, double Ceiling) E0Bounds = (60, 90);
     private static readonly (double Floor, double Ceiling) MrBounds = (1, 15);
 
-    protected override ForecastedScalars ProjectScalars(int year, ForecastContext ctx)
+    public override ForecastedScalars ProjectScalars(int year, ForecastContext ctx)
     {
         int last = ctx.LastObservedYear;
         int first = last - WindowYears + 1;

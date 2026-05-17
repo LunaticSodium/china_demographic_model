@@ -13,6 +13,9 @@ public interface IForecastModel
     string Description { get; }
 
     DemographicInputs Project(int year, ForecastContext ctx);
+
+    /// 公开标量层级 —— UI 显示预测年指标时直接用 (不必经 CCM)
+    ForecastedScalars ProjectScalars(int year, ForecastContext ctx);
 }
 
 /// 预测模型只投影标量，由基类负责组装成 DemographicInputs（ASFR / mortality 数组）。
@@ -47,7 +50,7 @@ public abstract class ForecastModelBase : IForecastModel
     public abstract string DisplayName { get; }
     public abstract string Description { get; }
 
-    protected abstract ForecastedScalars ProjectScalars(int year, ForecastContext ctx);
+    public abstract ForecastedScalars ProjectScalars(int year, ForecastContext ctx);
 
     public DemographicInputs Project(int year, ForecastContext ctx)
     {
