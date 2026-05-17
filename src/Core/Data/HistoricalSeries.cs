@@ -9,11 +9,14 @@ public sealed class HistoricalSeries
     public Dictionary<int, double> DeathsByYear { get; init; } = new();        // 单位：人
     public Dictionary<int, double> SexRatioAtBirthByYear { get; init; } = new();
     public Dictionary<int, double> CrudeMarriageRateByYear { get; init; } = new();
+    public Dictionary<int, double> MarriagesByYear { get; init; } = new();     // 单位：对
+    public Dictionary<int, double> DivorcesByYear { get; init; } = new();      // 单位：对
     public Dictionary<int, double> MeanAgeFirstMarriageMaleByYear { get; init; } = new();
     public Dictionary<int, double> MeanAgeFirstMarriageFemaleByYear { get; init; } = new();
     public Dictionary<int, double> E0OverallByYear { get; init; } = new();
     public Dictionary<int, double> E0MaleByYear { get; init; } = new();
     public Dictionary<int, double> E0FemaleByYear { get; init; } = new();
+    public Dictionary<int, double> TotalPopulationYearEndByYear { get; init; } = new();  // 单位：人 (NBS 年末估计)
     public Dictionary<int, PopulationPyramid> CensusPyramidByYear { get; init; } = new();
 
     public IEnumerable<int> Years
@@ -39,11 +42,14 @@ public sealed class HistoricalSeries
             DeathsByYear = ScaleWanToPersons(SeedLoader.LoadYearlyScalar(Path.Combine(seedDir, "deaths_yearly.csv"), "total_deaths_wan")),
             SexRatioAtBirthByYear = SeedLoader.LoadYearlyScalar(Path.Combine(seedDir, "sex_ratio_at_birth.csv"), "srb"),
             CrudeMarriageRateByYear = SeedLoader.LoadYearlyScalar(Path.Combine(seedDir, "marriage_rate.csv"), "crude_rate_per_1000"),
+            MarriagesByYear = ScaleWanToPersons(SeedLoader.LoadYearlyScalar(Path.Combine(seedDir, "marriages_yearly.csv"), "marriages_wan")),
+            DivorcesByYear = ScaleWanToPersons(SeedLoader.LoadYearlyScalar(Path.Combine(seedDir, "divorces_yearly.csv"), "divorces_wan")),
             MeanAgeFirstMarriageMaleByYear = SeedLoader.LoadYearlyScalar(Path.Combine(seedDir, "mean_age_first_marriage.csv"), "male"),
             MeanAgeFirstMarriageFemaleByYear = SeedLoader.LoadYearlyScalar(Path.Combine(seedDir, "mean_age_first_marriage.csv"), "female"),
             E0OverallByYear = SeedLoader.LoadYearlyScalar(Path.Combine(seedDir, "life_expectancy.csv"), "e0_overall"),
             E0MaleByYear = SeedLoader.LoadYearlyScalar(Path.Combine(seedDir, "life_expectancy.csv"), "e0_male"),
             E0FemaleByYear = SeedLoader.LoadYearlyScalar(Path.Combine(seedDir, "life_expectancy.csv"), "e0_female"),
+            TotalPopulationYearEndByYear = ScaleWanToPersons(SeedLoader.LoadYearlyScalar(Path.Combine(seedDir, "total_population_yearbook.csv"), "total_year_end_wan")),
         };
         var pyrDir = Path.Combine(seedDir, "census_pyramids");
         if (Directory.Exists(pyrDir))

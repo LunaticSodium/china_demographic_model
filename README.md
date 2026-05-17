@@ -47,8 +47,11 @@ china_demographic_model/
 │   │   ├── deaths_yearly.csv
 │   │   ├── sex_ratio_at_birth.csv
 │   │   ├── marriage_rate.csv
+│   │   ├── marriages_yearly.csv      # 万对 (民政部)
+│   │   ├── divorces_yearly.csv       # 万对 (民政部)
 │   │   ├── mean_age_first_marriage.csv
 │   │   ├── life_expectancy.csv
+│   │   ├── total_population_yearbook.csv  # NBS 年末口径
 │   │   └── census_pyramids/pyramid_2020.csv
 │   └── sources.md                    # 数据来源 + 口径 + caveat
 └── docs/MODEL.md                     # CCM 公式 + 紧约束推导
@@ -61,25 +64,28 @@ china_demographic_model/
 ✅ 三栏 WPF 主窗口、圆角深色主题、三 Tab：人口金字塔 / 时间序列 / 输入编辑
 ✅ CCM 投影引擎（生存 + 老化 + 出生分性别）
 ✅ FertilityModel（TFR + 平均初婚年龄 → ASFR）
-✅ **Coale-Demeny East + Brass logit 生命表**（e0 → q(x) Newton 求解）
+✅ **CensusLifeTables**：直接采用 5 次普查 22 锚 × 男女 q(x)，时间×年龄二维插值（普查范围外用 Brass shift）
+✅ **PopulationAlignment**（显式命名）：对 NBS 年末口径做缩放修正；UI 显示对齐后数值
+✅ 普查年自动 re-anchor：投影到 1990/2000/2010/2020 时替换为普查金字塔
 ✅ Calibrator（紧约束：模型出生 ↔ 观测出生缩放对齐）
 ✅ ScenarioBuilder（baseline 自动装配 + 观测 e0 接入）
-✅ 历史数据 1978-2024 全量年度（出生 / 死亡 / SRB / 结婚率 / 平均初婚 / e0）+ 5 个普查金字塔
+✅ 历史数据 1978-2024 全量年度（出生 / 死亡 / SRB / 结婚率 / 平均初婚 / e0 / 年末人口 / 结婚 / 离婚）+ 5 个普查金字塔
 ✅ 反事实克隆 + 偏离基线对比
-✅ 时间序列三图：出生 / 死亡 / 结婚率
+✅ 自定义 4 色 YearSlider（一般 / 普查 / 预测 / 反事实）
+✅ Pyramid 400ms hover tooltip（年龄 / 男女 / q(a)）
+✅ TimeSeriesView 三子组状态机：万人 / 万对 / 比率
 
-⏳ 待办（建议依次完成）：
+⏳ 待办：
 
 - 死亡侧 calibration（`AlignDeathsToHistory`，对称 `AlignBirthsToHistory`）
 - 死亡率曲线编辑器（当前仅 e0 单标量可编辑）
 - ASFR(15..49) 折线编辑器（当前由 FertilityModel 自动生成）
-- 普查年自动 re-anchor（Calibrator.AlignPyramidToCensus 已实现，RunProjection 中可调用）
 - 真实 1982/1990/2000/2010 普查金字塔 CSV（当前用 5 岁组 → 均匀展开近似）
-- IPF 形状对齐（替换 stub re-anchor）
+- IPF 形状对齐（替换 stub `AlignPyramidToCensus`）
 - 历次 1% 抽样年（1987/2005/2015）作为次级 anchor
-- Brass logit β-自由形式（当前 β=1 只移动 level，未调整年龄结构形状）
-- 国际迁移项（中国净迁移虽小但非零，香港 / 留学 / 移民出境可能在 -100 万级）
-- WPP / 育娲 / Wittgenstein Centre 数据并行加载，做敏感性带
+- Brass logit β-自由形式（当前 β=1）
+- 国际迁移项
+- WPP / 育娲 / Wittgenstein Centre 并行加载做敏感性带
 
 ## 设计约束
 

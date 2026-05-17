@@ -1,0 +1,26 @@
+# 中国年度结婚登记数（万对）—— 民政部《社会服务发展统计公报》
+# 单位：万对（一对 = 一次结婚登记）
+# 一对登记 = 两位当事人，所以 marriages_wan × 2 / total_population ≈ crude_marriage_rate
+year,marriages_wan,source_code,note
+2003,811,moca_bulletin,
+2004,868,moca_bulletin,
+2005,825,moca_bulletin,
+2006,945,moca_bulletin,
+2007,990,moca_bulletin,
+2008,1099,moca_bulletin,
+2009,1212,moca_bulletin,
+2010,1241,moca_bulletin,
+2011,1302,moca_bulletin,
+2012,1324,moca_bulletin,
+2013,1347,moca_bulletin,peak
+2014,1307,moca_bulletin,
+2015,1224,moca_bulletin,
+2016,1133,moca_bulletin,
+2017,1063,moca_bulletin,
+2018,1011,moca_bulletin,
+2019,947,moca_bulletin,
+2020,813,moca_bulletin,
+2021,764,moca_bulletin,
+2022,683,moca_bulletin,
+2023,768,moca_bulletin,rebound
+2024,611,moca_partial,2024 年降至历史新低

@@ -1,0 +1,54 @@
+# 中国年末总人口（万人）—— NBS《中国统计年鉴》历年公布
+# 该序列是 NBS 公布的"年末总人口"，与历次普查的"普查时点人口"是**两个不同口径**：
+#   - 年中估计：基于公安户籍 + 抽样调查；
+#   - 普查时点：基于实地登记。
+# 普查年（1982/1990/2000/2010/2020）二者通常有 0.5–3% 差异。
+# 见 src/Core/Engine/PopulationAlignment.cs。
+year,total_year_end_wan,source_code,note
+1978,96259,nbs_yearbook,
+1979,97542,nbs_yearbook,
+1980,98705,nbs_yearbook,
+1981,100072,nbs_yearbook,
+1982,101654,nbs_yearbook,三普
+1983,103008,nbs_yearbook,
+1984,104357,nbs_yearbook,
+1985,105851,nbs_yearbook,
+1986,107507,nbs_yearbook,
+1987,109300,nbs_yearbook,
+1988,111026,nbs_yearbook,
+1989,112704,nbs_yearbook,
+1990,114333,nbs_yearbook,四普
+1991,115823,nbs_yearbook,
+1992,117171,nbs_yearbook,
+1993,118517,nbs_yearbook,
+1994,119850,nbs_yearbook,
+1995,121121,nbs_yearbook,
+1996,122389,nbs_yearbook,
+1997,123626,nbs_yearbook,
+1998,124761,nbs_yearbook,
+1999,125786,nbs_yearbook,
+2000,126743,nbs_yearbook,五普
+2001,127627,nbs_yearbook,
+2002,128453,nbs_yearbook,
+2003,129227,nbs_yearbook,
+2004,129988,nbs_yearbook,
+2005,130756,nbs_yearbook,
+2006,131448,nbs_yearbook,
+2007,132129,nbs_yearbook,
+2008,132802,nbs_yearbook,
+2009,133450,nbs_yearbook,
+2010,134091,nbs_yearbook,六普
+2011,134735,nbs_yearbook,
+2012,135404,nbs_yearbook,
+2013,136072,nbs_yearbook,
+2014,136782,nbs_yearbook,
+2015,137462,nbs_yearbook,
+2016,138271,nbs_yearbook,
+2017,139008,nbs_yearbook,
+2018,139538,nbs_yearbook,
+2019,140005,nbs_yearbook,
+2020,141212,nbs_yearbook,七普
+2021,141260,nbs_yearbook,
+2022,141175,nbs_yearbook,首次年度负增长
+2023,140967,nbs_yearbook,
+2024,140828,nbs_yearbook,

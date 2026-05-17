@@ -85,7 +85,7 @@
                     <StackPanel>
                         <TextBlock Text="高级 · ASFR / 死亡率分布" Style="{StaticResource SectionHeader}"/>
                         <TextBlock Style="{StaticResource SubtitleText}"
-                                   Text="（后续：折线编辑 ASFR(15..49) 与男女年龄死亡率曲线。MVP 阶段由 FertilityModel + DefaultMortalitySchedule 自动产生，仅暴露上方六个标量。）"/>
+                                   Text="（后续：折线编辑 ASFR(15..49) 与男女年龄死亡率曲线。当前 ASFR 由 FertilityModel 从 TFR + 平均初婚年龄推导；死亡率取自 CensusLifeTables（5 普查实证 q(x)，范围外 Brass shift），仅暴露上方六个标量。）"/>
                     </StackPanel>
                 </Border>
             </StackPanel>

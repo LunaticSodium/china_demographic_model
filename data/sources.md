@@ -16,6 +16,9 @@
 | `marriage_rate.csv` | 民政部《社会服务发展统计公报》 | 2003 前数据稀疏；2020+ 受疫情登记延迟；离婚冷静期（2021）实施使 2021+ 结婚率下行加速 |
 | `mean_age_first_marriage.csv` | 历次普查公报 | 仅 5 个数据点；2010 → 2020 跳变（女 +4 岁）显著反映 80 后晚婚 |
 | `life_expectancy.csv` | 历次普查直接公布 + WHO GHO / NBS 非普查年估计 | 普查年 e0 可靠度高；非普查年 ±0.5 年波动；2020-2023 COVID 影响有争议。 |
+| `total_population_yearbook.csv` | NBS《中国统计年鉴》"年末总人口" | 与"普查时点人口"是两个口径；本工具用作 `PopulationAlignment` 的目标值。 |
+| `marriages_yearly.csv` | 民政部《社会服务发展统计公报》 | 仅 2003 起系统公布；单位万对。 |
+| `divorces_yearly.csv` | 民政部《社会服务发展统计公报》 | 2021 离婚冷静期实施后陡降；单位万对。 |
 | `census_pyramids/pyramid_*.csv` | 历次普查公报 5 岁组 → 均匀展开 | 单岁精度有限；80+ 用指数衰减分配；如已知更细，请替换为真实 CSV |
 
 ## 公开数据 vs "真实数据" 的认识论位置

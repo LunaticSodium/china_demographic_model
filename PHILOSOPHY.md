@@ -82,6 +82,24 @@ A user who believes the official 2017–2019 birth numbers are inflated can clon
 
 ---
 
-## 5. Versioning of this document
+## 5. Data: 口径质疑 / 数值采纳
+
+A refinement of the broader "official sources are a lower bound, not truth" stance for **demographic / macro data specifically**:
+
+- **At the methodology level** (口径) —— skepticism is appropriate. Examples: NBS year-end estimates vs census enumeration differ by 0.5–3% (the census often finds more people); 1980s–2000s SRB published values likely undercount female-infant underreporting; 2017–2019 birth totals are widely suspected of inflation; the 2023 death total of 1110万 is treated by independent estimators as a lower bound on COVID excess mortality.
+- **At the value level** (数值) —— **fully adopted**. There is no alternative source with comparable credibility. Independent reconstructions (Yi Fuxian, Liang Jianzhang) have standard errors larger than the published series.
+
+Operational consequence:
+
+- Any methodology-adjustment code must be **explicitly named**: classes / methods carry words like `Alignment`, `Correction`, `Adjustment`. No magic numbers buried in private helpers.
+- Docs (this file, `docs/MODEL.md`, `data/sources.md`, `README.md`) must state the adjustment exists, its inputs, its assumptions.
+- UI shows the **adjusted** result. The original / pre-adjustment value is not displayed alongside (to avoid forcing readers to mediate two numbers).
+- Form of adjustment: take two officially-published numbers under different 口径 for the same population (e.g., NBS year-end estimate vs census enumeration), compute the ratio, apply as a multiplicative correction to the year range.
+
+This is the principle behind `src/Core/Engine/PopulationAlignment.cs` (NBS year-end alignment of CCM-projected pyramid totals).
+
+See also: parent project's `data_official_value_adoption` memory; the distinction from `sources_official_distrust_platform_labor` (which targets platform / labor data where political incentives to suppress are stronger).
+
+## 6. Versioning of this document
 
 This file is **append-only** for the founding prompt section (§0). The interpretation sections (§1–§4) may evolve as the codebase does, but the original prompt is preserved verbatim as the historical record of intent.

@@ -42,8 +42,9 @@ public sealed class ScenarioBuilder
                 CrudeMarriageRate = LookupOrInterp(hist.CrudeMarriageRateByYear, y),
                 MeanAgeFirstMarriageMale = LookupOrInterp(hist.MeanAgeFirstMarriageMaleByYear, y, fallback: 26.0),
                 MeanAgeFirstMarriageFemale = LookupOrInterp(hist.MeanAgeFirstMarriageFemaleByYear, y, fallback: 24.0),
-                MortalityMale = CoaleDemenyLifeTable.BuildQx(eM, isMale: true),
-                MortalityFemale = CoaleDemenyLifeTable.BuildQx(eF, isMale: false),
+                // 死亡率 schedule：1981-2020 直接用普查生命表；范围外用 Brass shift 到目标 e0
+                MortalityMale = Data.CensusLifeTables.GetQx(y, isMale: true, targetE0: eM),
+                MortalityFemale = Data.CensusLifeTables.GetQx(y, isMale: false, targetE0: eF),
             };
             // ASFR 从 TFR + MAFM 推导。TFR 用 births / 育龄女性 反推（如果有 initial 金字塔）。
             double tfr = 1.6; // placeholder

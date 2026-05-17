@@ -6,33 +6,81 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
-            <TextBlock Text="时间序列" Style="{StaticResource SectionHeader}" VerticalAlignment="Center"/>
-            <TextBlock Style="{StaticResource SubtitleText}" VerticalAlignment="Center" Margin="12,0,0,0"
-                       Text="实线：当前场景  ·  虚线：历史观测"/>
-        </StackPanel>
+        <!-- 子组切换 ToggleButton 链 -->
+        <Grid Grid.Row="0" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" Background="{StaticResource BgSurfaceBrush}" CornerRadius="10" Padding="4">
+                <StackPanel Orientation="Horizontal">
+                    <ToggleButton Content="万人组"
+                                  IsChecked="{Binding SelectedSeriesGroup, Converter={StaticResource EnumToBool}, ConverterParameter=TenThousandPeople, Mode=TwoWay}"
+                                  Margin="2,0" Padding="14,6"/>
+                    <ToggleButton Content="万对组"
+                                  IsChecked="{Binding SelectedSeriesGroup, Converter={StaticResource EnumToBool}, ConverterParameter=TenThousandPairs, Mode=TwoWay}"
+                                  Margin="2,0" Padding="14,6"/>
+                    <ToggleButton Content="比率组"
+                                  IsChecked="{Binding SelectedSeriesGroup, Converter={StaticResource EnumToBool}, ConverterParameter=Ratios, Mode=TwoWay}"
+                                  Margin="2,0" Padding="14,6"/>
+                </StackPanel>
+            </Border>
+            <TextBlock Grid.Column="1" Style="{StaticResource SubtitleText}" Margin="14,0,0,0"
+                       VerticalAlignment="Center"
+                       Text="实线：当前场景 · 虚线：历史观测 · 红色竖线：当前年份"/>
+        </Grid>
 
-        <Border Grid.Row="1" Background="{StaticResource BgSurfaceBrush}" CornerRadius="10"
-                Margin="0,0,0,8" Padding="6">
-            <ScottPlot:WpfPlot x:Name="BirthsPlot"/>
-        </Border>
+        <!-- 万人组 -->
+        <Grid Grid.Row="1" x:Name="PeopleGroup">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Border Grid.Row="0" Background="{StaticResource BgSurfaceBrush}" CornerRadius="10" Margin="0,0,0,8" Padding="6">
+                <ScottPlot:WpfPlot x:Name="BirthsPlot"/>
+            </Border>
+            <Border Grid.Row="1" Background="{StaticResource BgSurfaceBrush}" CornerRadius="10" Padding="6">
+                <ScottPlot:WpfPlot x:Name="DeathsPlot"/>
+            </Border>
+        </Grid>
 
-        <Border Grid.Row="2" Background="{StaticResource BgSurfaceBrush}" CornerRadius="10"
-                Margin="0,0,0,8" Padding="6">
-            <ScottPlot:WpfPlot x:Name="DeathsPlot"/>
-        </Border>
+        <!-- 万对组 -->
+        <Grid Grid.Row="1" x:Name="PairsGroup" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Border Grid.Row="0" Background="{StaticResource BgSurfaceBrush}" CornerRadius="10" Margin="0,0,0,8" Padding="6">
+                <ScottPlot:WpfPlot x:Name="MarriagesPlot"/>
+            </Border>
+            <Border Grid.Row="1" Background="{StaticResource BgSurfaceBrush}" CornerRadius="10" Padding="6">
+                <ScottPlot:WpfPlot x:Name="DivorcesPlot"/>
+            </Border>
+        </Grid>
 
-        <Border Grid.Row="3" Background="{StaticResource BgSurfaceBrush}" CornerRadius="10"
-                Margin="0,0,0,8" Padding="6">
-            <ScottPlot:WpfPlot x:Name="MarriagePlot"/>
-        </Border>
+        <!-- 比率组 -->
+        <Grid Grid.Row="1" x:Name="RatiosGroup" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Border Grid.Row="0" Background="{StaticResource BgSurfaceBrush}" CornerRadius="10" Margin="0,0,0,8" Padding="6">
+                <ScottPlot:WpfPlot x:Name="SrbPlot"/>
+            </Border>
+            <Border Grid.Row="1" Background="{StaticResource BgSurfaceBrush}" CornerRadius="10" Margin="0,0,0,8" Padding="6">
+                <ScottPlot:WpfPlot x:Name="TfrPlot"/>
+            </Border>
+            <Border Grid.Row="2" Background="{StaticResource BgSurfaceBrush}" CornerRadius="10" Padding="6">
+                <ScottPlot:WpfPlot x:Name="MarriageRatePlot"/>
+            </Border>
+        </Grid>
 
-        <TextBlock Grid.Row="4" Style="{StaticResource SubtitleText}"
-                   Text="上：年出生（万人）　·　中：年死亡（万人）　·　下：粗结婚率（‰）"/>
+        <TextBlock Grid.Row="2" Style="{StaticResource SubtitleText}" Margin="0,8,0,0"
+                   x:Name="FooterText"
+                   Text="万人组：出生 / 死亡（万人，对齐 NBS 年末口径）"/>
     </Grid>
 </UserControl>

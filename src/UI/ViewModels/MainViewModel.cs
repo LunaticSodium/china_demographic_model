@@ -8,6 +8,13 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace ChinaDemographicModel.UI.ViewModels;
 
+public enum SeriesGroup
+{
+    TenThousandPeople,  // 万人组：出生、死亡
+    TenThousandPairs,   // 万对组：结婚、离婚
+    Ratios,             // 比率组：SRB、TFR、粗结婚率
+}
+
 public partial class MainViewModel : ObservableObject
 {
     private readonly CohortComponentProjector _projector = new();
@@ -17,8 +24,23 @@ public partial class MainViewModel : ObservableObject
     public HistoricalSeries? Historical { get; }
     public ObservableCollection<Scenario> Scenarios { get; } = new();
 
-    public int YearMin { get; } = 1978;
+    public int YearMin { get; } = 1982;
     public int YearMax { get; } = 2050;
+
+    public IEnumerable<int> CensusYears =>
+        Historical?.CensusPyramidByYear.Keys.OrderBy(k => k) ?? Enumerable.Empty<int>();
+
+    public int LastObservedYear =>
+        Historical?.BirthsByYear.Keys.DefaultIfEmpty(2024).Max() ?? 2024;
+
+    public bool IsCounterfactualScenario
+    {
+        get
+        {
+            var baseline = Scenarios.FirstOrDefault(s => s.Name == "Baseline");
+            return baseline != null && ActiveScenario != null && ActiveScenario != baseline;
+        }
+    }
 
     [ObservableProperty] private Scenario? activeScenario;
     [ObservableProperty] private int currentYear = 2020;
@@ -34,6 +56,7 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private double editMafmMale = 26;
     [ObservableProperty] private double editMafmFemale = 24;
     [ObservableProperty] private string editHint = "选择年份并修改滑条，点'应用到当前年'。";
+    [ObservableProperty] private SeriesGroup selectedSeriesGroup = SeriesGroup.TenThousandPeople;
 
     public MainViewModel()
     {
@@ -52,17 +75,57 @@ public partial class MainViewModel : ObservableObject
         }
 
         var baseline = _builder.BuildBaseline(Historical, YearMin, YearMax);
-        if (baseline.Initial != null)
-        {
-            // 从 initial 推到 YearMax
-            var ranged = _projector.ProjectRange(baseline.Initial, baseline.InputsByYear, baseline.Initial.Year, YearMax);
-            foreach (var (y, p) in ranged) baseline.ProjectedByYear[y] = p;
-            AppendLog($"基线投影完成: {baseline.Initial.Year} → {YearMax}");
-        }
         Scenarios.Add(baseline);
         ActiveScenario = baseline;
+        RunProjectionForScenario(baseline, baseline.LockToHistory);
+        AppendLog($"基线投影完成 [Baseline] {baseline.Initial?.Year} → {YearMax}");
         CurrentYear = 2020;
         SyncEditFieldsFromInputs();
+    }
+
+    /// 给定 scenario 跑完整投影：紧约束 → CCM → 普查 re-anchor → NBS 口径修正。
+    /// 这是 baseline 初始化和 RunProjection 命令的共用实现。
+    private void RunProjectionForScenario(Scenario scen, bool applyHistoryLock)
+    {
+        if (scen.Initial == null || Historical == null) return;
+
+        // 起始金字塔：对齐 NBS 年末
+        var (initialAligned, initWasCorr, _) = PopulationAlignment.AlignToNbsYearEnd(
+            scen.Initial, Historical.TotalPopulationYearEndByYear);
+        scen.ProjectedByYear.Clear();
+        scen.ProjectedByYear[initialAligned.Year] = initialAligned;
+        if (initWasCorr)
+            AppendLog($"PopulationAlignment: 起始 {initialAligned.Year} 已对齐 NBS 年末口径");
+
+        var cur = initialAligned;
+        for (int y = cur.Year; y < YearMax; y++)
+        {
+            if (!scen.InputsByYear.TryGetValue(y, out var inp)) break;
+
+            // 紧约束：观测年总值复位
+            if (applyHistoryLock)
+            {
+                if (Historical.BirthsByYear.TryGetValue(y, out var b)) inp.TotalBirths = b;
+                if (Historical.SexRatioAtBirthByYear.TryGetValue(y, out var s)) inp.SexRatioAtBirth = s;
+                if (Historical.CrudeMarriageRateByYear.TryGetValue(y, out var m)) inp.CrudeMarriageRate = m;
+                _calibrator.AlignBirthsToHistory(inp, inp.TotalBirths, cur);
+            }
+
+            // CCM
+            var next = _projector.Project(cur, inp);
+
+            // 普查年 re-anchor：替换为普查金字塔（保留形状）
+            if (Historical.CensusPyramidByYear.TryGetValue(next.Year, out var census))
+                next = _calibrator.AlignPyramidToCensus(next, census);
+
+            // 显性口径修正：对齐到 NBS 年末
+            var (alignedNext, _, _) = PopulationAlignment.AlignToNbsYearEnd(
+                next, Historical.TotalPopulationYearEndByYear);
+            next = alignedNext;
+
+            scen.ProjectedByYear[next.Year] = next;
+            cur = next;
+        }
     }
 
     public PopulationPyramid? CurrentPyramid
@@ -189,6 +252,7 @@ public partial class MainViewModel : ObservableObject
     partial void OnActiveScenarioChanged(Scenario? value)
     {
         SyncEditFieldsFromInputs();
+        OnPropertyChanged(nameof(IsCounterfactualScenario));
         NotifyDerived();
     }
 
@@ -233,32 +297,9 @@ public partial class MainViewModel : ObservableObject
     private void RunProjection()
     {
         var scen = ActiveScenario;
-        if (scen == null || scen.Initial == null) return;
-
-        // 紧约束：锁定历史 → 把已观测年的 totals 复位
-        if (LockToHistory && Historical != null)
-        {
-            foreach (var (y, inp) in scen.InputsByYear)
-            {
-                if (Historical.BirthsByYear.TryGetValue(y, out var b)) inp.TotalBirths = b;
-                if (Historical.SexRatioAtBirthByYear.TryGetValue(y, out var s)) inp.SexRatioAtBirth = s;
-                if (Historical.CrudeMarriageRateByYear.TryGetValue(y, out var m)) inp.CrudeMarriageRate = m;
-            }
-        }
-
-        scen.ProjectedByYear.Clear();
-        scen.ProjectedByYear[scen.Initial.Year] = scen.Initial.Clone();
-        var cur = scen.Initial;
-        for (int y = scen.Initial.Year; y < YearMax; y++)
-        {
-            if (!scen.InputsByYear.TryGetValue(y, out var inp)) break;
-            // 紧约束：使用 Calibrator 让模型生成的 births 命中观测
-            if (LockToHistory && Historical?.BirthsByYear.TryGetValue(y, out var obsB) == true)
-                _calibrator.AlignBirthsToHistory(inp, obsB, cur);
-            cur = _projector.Project(cur, inp);
-            scen.ProjectedByYear[cur.Year] = cur;
-        }
-        AppendLog($"重跑投影完成 [{scen.Name}] {scen.Initial.Year}→{YearMax}");
+        if (scen == null) return;
+        RunProjectionForScenario(scen, LockToHistory);
+        AppendLog($"重跑投影完成 [{scen.Name}] {scen.Initial?.Year}→{YearMax} (lock={LockToHistory})");
         ProjectionStamp++;
         NotifyDerived();
     }
@@ -268,16 +309,12 @@ public partial class MainViewModel : ObservableObject
     {
         var idx = ActiveScenario == null ? -1 : Scenarios.IndexOf(ActiveScenario);
         if (idx < 0) return;
-        // 重建该 scenario
         var fresh = _builder.BuildBaseline(Historical ?? new HistoricalSeries(), YearMin, YearMax);
         fresh.Name = ActiveScenario!.Name;
-        if (fresh.Initial != null)
-        {
-            var ranged = _projector.ProjectRange(fresh.Initial, fresh.InputsByYear, fresh.Initial.Year, YearMax);
-            foreach (var (y, p) in ranged) fresh.ProjectedByYear[y] = p;
-        }
+        fresh.LockToHistory = ActiveScenario.LockToHistory;
         Scenarios[idx] = fresh;
         ActiveScenario = fresh;
+        RunProjectionForScenario(fresh, fresh.LockToHistory);
         AppendLog($"已重置场景 [{fresh.Name}]");
         ProjectionStamp++;
         NotifyDerived();

@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:ChinaDemographicModel.UI.Views"
         xmlns:vm="clr-namespace:ChinaDemographicModel.UI.ViewModels"
+        xmlns:controls="clr-namespace:ChinaDemographicModel.UI.Controls"
         Title="中国人口结构 · 紧模型 / 反事实工具"
         Width="1480" Height="900"
         MinWidth="1100" MinHeight="700"
@@ -39,18 +40,36 @@
                                Style="{StaticResource SubtitleText}" Margin="0,2,0,0"/>
                 </StackPanel>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,16,0">
-                    <TextBlock Text="年份" Style="{StaticResource SubtitleText}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                    <Slider x:Name="YearSlider"
-                            Minimum="{Binding YearMin}"
-                            Maximum="{Binding YearMax}"
-                            Value="{Binding CurrentYear, Mode=TwoWay}"
-                            TickFrequency="5" IsSnapToTickEnabled="False"
-                            Width="320" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                    <TextBlock Text="{Binding CurrentYear}" FontSize="20" FontWeight="Light"
+                <Grid Grid.Column="1" Margin="20,0,16,0" VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,14,0">
+                        <Border Width="8" Height="8" CornerRadius="2" Margin="0,0,4,0" Background="{StaticResource BgElevBrush}"/>
+                        <TextBlock Text="一般" Style="{StaticResource SubtitleText}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <Border Width="8" Height="8" CornerRadius="2" Margin="0,0,4,0" Background="{StaticResource AccentPrimaryBrush}"/>
+                        <TextBlock Text="普查" Style="{StaticResource SubtitleText}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <Border Width="8" Height="8" CornerRadius="2" Margin="0,0,4,0" Background="{StaticResource AccentTertiaryBrush}"/>
+                        <TextBlock Text="预测" Style="{StaticResource SubtitleText}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <Border Width="8" Height="8" CornerRadius="2" Margin="0,0,4,0" Background="{StaticResource WarnBrush}"/>
+                        <TextBlock Text="反事实" Style="{StaticResource SubtitleText}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <controls:YearSlider Grid.Column="1"
+                                         Minimum="{Binding YearMin}"
+                                         Maximum="{Binding YearMax}"
+                                         Value="{Binding CurrentYear, Mode=TwoWay}"
+                                         CensusYears="{Binding CensusYears}"
+                                         LastObservedYear="{Binding LastObservedYear}"
+                                         IsCounterfactual="{Binding IsCounterfactualScenario}"
+                                         MinWidth="500"
+                                         VerticalAlignment="Center"
+                                         Margin="0,0,16,0"/>
+                    <TextBlock Grid.Column="2" Text="{Binding CurrentYear}" FontSize="22" FontWeight="Light"
                                Foreground="{StaticResource AccentPrimaryBrush}" MinWidth="58"
                                VerticalAlignment="Center"/>
-                </StackPanel>
+                </Grid>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Content="↺ 重置基线" Style="{StaticResource GhostButton}"

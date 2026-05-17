@@ -1,0 +1,26 @@
+# 中国年度离婚登记数（万对）—— 民政部《社会服务发展统计公报》
+# 单位：万对
+# 2021-01 起《民法典》实施 30 天离婚冷静期，导致 2021+ 离婚数显著回落。
+year,divorces_wan,source_code,note
+2003,133,moca_bulletin,
+2004,166,moca_bulletin,
+2005,179,moca_bulletin,
+2006,191,moca_bulletin,
+2007,210,moca_bulletin,
+2008,227,moca_bulletin,
+2009,247,moca_bulletin,
+2010,268,moca_bulletin,
+2011,287,moca_bulletin,
+2012,310,moca_bulletin,
+2013,350,moca_bulletin,
+2014,364,moca_bulletin,
+2015,384,moca_bulletin,
+2016,416,moca_bulletin,
+2017,437,moca_bulletin,
+2018,446,moca_bulletin,
+2019,470,moca_bulletin,peak
+2020,433,moca_bulletin,
+2021,214,moca_bulletin,冷静期实施
+2022,210,moca_bulletin,
+2023,259,moca_bulletin,
+2024,263,moca_partial,

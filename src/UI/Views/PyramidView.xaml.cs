@@ -1,8 +1,11 @@
 using System.ComponentModel;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using ChinaDemographicModel.Core.Models;
 using ChinaDemographicModel.UI.ViewModels;
 
@@ -11,10 +14,15 @@ namespace ChinaDemographicModel.UI.Views;
 public partial class PyramidView : UserControl
 {
     private MainViewModel? _vm;
+    private readonly DispatcherTimer _hoverTimer;
+    private Point _lastMousePos;
+    private Border? _tooltipBorder;
 
     public PyramidView()
     {
         InitializeComponent();
+        _hoverTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(400) };
+        _hoverTimer.Tick += (_, _) => ShowTooltipAtLastPos();
         DataContextChanged += (_, e) =>
         {
             if (_vm != null) _vm.PropertyChanged -= OnVmPropertyChanged;
@@ -22,6 +30,95 @@ public partial class PyramidView : UserControl
             if (_vm != null) _vm.PropertyChanged += OnVmPropertyChanged;
             Redraw();
         };
+    }
+
+    private void PyramidCanvas_MouseMove(object sender, MouseEventArgs e)
+    {
+        _lastMousePos = e.GetPosition(PyramidCanvas);
+        HideTooltip();
+        _hoverTimer.Stop();
+        _hoverTimer.Start();
+    }
+
+    private void PyramidCanvas_MouseLeave(object sender, MouseEventArgs e)
+    {
+        _hoverTimer.Stop();
+        HideTooltip();
+    }
+
+    private void HideTooltip()
+    {
+        if (_tooltipBorder != null)
+        {
+            PyramidCanvas.Children.Remove(_tooltipBorder);
+            _tooltipBorder = null;
+        }
+    }
+
+    private void ShowTooltipAtLastPos()
+    {
+        _hoverTimer.Stop();
+        if (_vm?.CurrentPyramid == null) return;
+        var p = _vm.CurrentPyramid;
+        double w = PyramidCanvas.ActualWidth;
+        double h = PyramidCanvas.ActualHeight;
+        if (w < 40 || h < 40) return;
+
+        int maxAge = PopulationPyramid.MaxAge;
+        double rowH = h / (maxAge + 1);
+        int age = (int)Math.Round((h - _lastMousePos.Y) / rowH - 0.5);
+        if (age < 0 || age > maxAge) return;
+
+        double center = w / 2.0;
+        bool isMale = _lastMousePos.X < center;
+
+        DemographicInputs? inp = null;
+        if (_vm.ActiveScenario != null && _vm.ActiveScenario.InputsByYear.TryGetValue(_vm.CurrentYear, out var ii))
+            inp = ii;
+        double qaM = inp?.MortalityMale[age] ?? 0;
+        double qaF = inp?.MortalityFemale[age] ?? 0;
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"年龄 {age}{(isMale ? " (鼠标在男侧)" : " (鼠标在女侧)")}");
+        sb.AppendLine($"男  {FormatPersons(p.Male[age])}");
+        sb.AppendLine($"女  {FormatPersons(p.Female[age])}");
+        sb.Append($"q({age})  M={qaM:0.0000}  F={qaF:0.0000}");
+
+        var text = new TextBlock
+        {
+            Text = sb.ToString(),
+            Foreground = (Brush)FindResource("TextPrimaryBrush"),
+            FontSize = 11,
+            FontFamily = (FontFamily)FindResource("UiFont"),
+            Margin = new Thickness(10, 7, 10, 7),
+        };
+        var border = new Border
+        {
+            Background = (Brush)FindResource("BgCardBrush"),
+            BorderBrush = (Brush)FindResource("AccentPrimaryBrush"),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(8),
+            Child = text,
+            IsHitTestVisible = false,
+        };
+        PyramidCanvas.Children.Add(border);
+        border.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+        double tx = _lastMousePos.X + 14;
+        double ty = _lastMousePos.Y - 8;
+        if (tx + border.DesiredSize.Width > w) tx = _lastMousePos.X - 14 - border.DesiredSize.Width;
+        if (ty + border.DesiredSize.Height > h) ty = h - border.DesiredSize.Height - 4;
+        if (ty < 0) ty = 0;
+        Canvas.SetLeft(border, tx);
+        Canvas.SetTop(border, ty);
+        Canvas.SetZIndex(border, 1000);
+        _tooltipBorder = border;
+    }
+
+    private static string FormatPersons(double v)
+    {
+        if (v >= 1e8) return $"{v / 1e8:0.000} 亿";
+        if (v >= 1e4) return $"{v / 1e4:0.0} 万";
+        return v.ToString("0");
     }
 
     private void OnVmPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -38,6 +135,7 @@ public partial class PyramidView : UserControl
 
     private void Redraw()
     {
+        _tooltipBorder = null;  // cleared by Children.Clear below
         PyramidCanvas.Children.Clear();
         if (_vm?.CurrentPyramid == null) return;
         var p = _vm.CurrentPyramid;
