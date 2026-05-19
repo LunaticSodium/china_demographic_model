@@ -30,8 +30,7 @@
                 ClipToBounds="True">
             <Canvas x:Name="PyramidCanvas"
                     SizeChanged="PyramidCanvas_SizeChanged"
-                    MouseMove="PyramidCanvas_MouseMove"
-                    MouseLeave="PyramidCanvas_MouseLeave"
+                    MouseLeftButtonDown="PyramidCanvas_MouseLeftButtonDown"
                     Background="Transparent"/>
         </Border>
 

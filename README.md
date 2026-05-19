@@ -38,12 +38,12 @@ dotnet run --project src/UI/UI.csproj
 三栏布局：
 
 - **左**：场景列表 / 历史锁开关 / **预测模型选择** / 数据健康
-- **中**：Tab 切换 — 人口金字塔（Canvas, 400ms hover tooltip, X 轴固定刻度）/ 时间序列（万人 / 万对 / 比率三子组）/ 输入编辑（滑条）
+- **中**：Tab 切换 — 人口金字塔（Canvas, X 轴固定刻度, **点击单龄条带显示详情**：人口 / q(a) / 已结婚估比例 / 已生育至少 1 子估比例 / 累计 cohort 损失）/ 时间序列（万人 / 万对 / 比率三子组）/ 输入编辑（滑条）
 - **右**：当前年指标（预测年自动加 cyan 外框 + 模型派生数值）/ 偏离基线 / 日志 / 数据来源
 
 顶栏自定义 4 色 YearSlider：一般灰 / 普查草绿 / 预测天青 / 反事实鹅黄。
 
-## 当前状态 (v0.2.0)
+## 当前状态 (v1.0.0)
 
 ### 已实装
 
@@ -52,7 +52,7 @@ dotnet run --project src/UI/UI.csproj
 | 数据 | 1978-2025 出生 / 死亡 / SRB / 婚率 / 万对结婚 / 万对离婚 / 平均初婚 / e0 / TFR / 年末总人口；5 个普查金字塔（2020 详细 CSV + 其余 5 岁组近似 fallback）|
 | 引擎 | CCM 投影、FertilityModel (TFR + MAFM → ASFR)、Calibrator（出生缩放对齐）、PopulationAlignment（NBS 年末口径修正）、CensusLifeTables（5 普查 × 22 锚 q(x) 二维插值）|
 | 预测模型 | IForecastModel 接口 + 3 个实现：OLS 趋势 / 末值常数 / 阻尼趋势 |
-| UI | 圆角深色 Fluent 主题、4 色 YearSlider、固定刻度金字塔 + hover tooltip、时间序列三子组状态机、citation 面板、模型选择卡 |
+| UI | 圆角深色 Fluent 主题、4 色 YearSlider、固定刻度金字塔 + 点击详情面板、时间序列三子组状态机、citation 面板、模型选择卡 |
 
 ### 待办（roadmap）
 
