@@ -9,4 +9,15 @@
     <AssemblyName>ChinaDemographicModel.Core</AssemblyName>
   </PropertyGroup>
 
+  <!-- Seed CSV 打进 Core.dll，随引擎走到每个平台（Android/iOS 无相邻文件系统，只能靠内嵌）。
+       桌面 / WPF 仍可从 data/seed 目录读盘；两条路径共用 SeedLoader 解析。 -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\data\seed\*.csv">
+      <LogicalName>seed.%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\data\seed\census_pyramids\*.csv">
+      <LogicalName>seed.census.%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

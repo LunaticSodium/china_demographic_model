@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:CompileBindings="False"
+             x:Class="ChinaDemographicModel.App.Views.PyramidView">
+    <Grid RowDefinitions="Auto,*,Auto">
+        <Grid Grid.Row="0" Margin="0,0,0,12">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                <TextBlock Text="人口金字塔 · " Classes="section" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding CurrentYear}" Classes="accent"
+                           FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Border Background="{StaticResource AccentPrimaryBrush}" CornerRadius="3" Width="10" Height="10" Margin="0,0,6,0"/>
+                <TextBlock Text="男" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                <Border Background="{StaticResource AccentTertiaryBrush}" CornerRadius="3" Width="10" Height="10" Margin="0,0,6,0"/>
+                <TextBlock Text="女" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <Border Grid.Row="1" Background="{StaticResource BgSurfaceBrush}" CornerRadius="10" ClipToBounds="True">
+            <Canvas x:Name="PyramidCanvas" Background="Transparent"/>
+        </Border>
+
+        <TextBlock Grid.Row="2" Classes="subtitle" Margin="0,8,0,0"
+                   Text="横轴：人数（万人）　·　纵轴：年龄。负向为男，正向为女。baseline 实色 / counterfactual 描边线（如已克隆场景）"/>
+    </Grid>
+</UserControl>

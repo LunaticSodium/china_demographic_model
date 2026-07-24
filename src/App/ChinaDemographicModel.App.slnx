@@ -1,0 +1,11 @@
+﻿<Solution>
+  <Project Path="ChinaDemographicModel.App.Android/ChinaDemographicModel.App.Android.csproj">
+    <Deploy />
+  </Project>
+  <Project Path="ChinaDemographicModel.App.Browser/ChinaDemographicModel.App.Browser.csproj" />
+  <Project Path="ChinaDemographicModel.App.Desktop/ChinaDemographicModel.App.Desktop.csproj" />
+  <Project Path="ChinaDemographicModel.App.iOS/ChinaDemographicModel.App.iOS.csproj">
+    <Deploy />
+  </Project>
+  <Project Path="ChinaDemographicModel.App/ChinaDemographicModel.App.csproj" />
+</Solution>

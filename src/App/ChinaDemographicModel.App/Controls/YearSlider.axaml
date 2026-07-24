@@ -1,0 +1,11 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ChinaDemographicModel.App.Controls.YearSlider"
+             MinHeight="60" MinWidth="400">
+    <Grid RowDefinitions="*,Auto">
+        <Canvas Grid.Row="0" x:Name="TrackCanvas"
+                Background="Transparent" ClipToBounds="False"/>
+        <Canvas Grid.Row="1" x:Name="LabelCanvas" Height="16" Margin="0,6,0,0"
+                Background="Transparent"/>
+    </Grid>
+</UserControl>

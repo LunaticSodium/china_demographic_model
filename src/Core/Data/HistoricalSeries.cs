@@ -76,6 +76,54 @@ public sealed class HistoricalSeries
         return s;
     }
 
+    /// 从打进 Core.dll 的内嵌 seed CSV 加载（平台无关，Android/iOS/桌面通用）。
+    /// 与 LoadFromSeedDir 数值一致，只是数据源从磁盘换成 EmbeddedResource。
+    public static HistoricalSeries LoadEmbedded()
+    {
+        Dictionary<int, double> Scalar(string file, string col)
+        {
+            var text = SeedLoader.ReadEmbeddedText("seed." + file);
+            return text == null ? new Dictionary<int, double>() : SeedLoader.LoadYearlyScalarFromText(text, col);
+        }
+
+        var s = new HistoricalSeries
+        {
+            BirthsByYear = ScaleWanToPersons(Scalar("births_yearly.csv", "total_births_wan")),
+            DeathsByYear = ScaleWanToPersons(Scalar("deaths_yearly.csv", "total_deaths_wan")),
+            SexRatioAtBirthByYear = Scalar("sex_ratio_at_birth.csv", "srb"),
+            CrudeMarriageRateByYear = Scalar("marriage_rate.csv", "crude_rate_per_1000"),
+            MarriagesByYear = ScaleWanToPersons(Scalar("marriages_yearly.csv", "marriages_wan")),
+            DivorcesByYear = ScaleWanToPersons(Scalar("divorces_yearly.csv", "divorces_wan")),
+            MeanAgeFirstMarriageMaleByYear = Scalar("mean_age_first_marriage.csv", "male"),
+            MeanAgeFirstMarriageFemaleByYear = Scalar("mean_age_first_marriage.csv", "female"),
+            E0OverallByYear = Scalar("life_expectancy.csv", "e0_overall"),
+            E0MaleByYear = Scalar("life_expectancy.csv", "e0_male"),
+            E0FemaleByYear = Scalar("life_expectancy.csv", "e0_female"),
+            TotalPopulationYearEndByYear = ScaleWanToPersons(Scalar("total_population_yearbook.csv", "total_year_end_wan")),
+            TfrByYear = Scalar("tfr_yearly.csv", "tfr"),
+        };
+        // 内嵌普查金字塔（seed.census.pyramid_YYYY.csv）
+        foreach (var res in SeedLoader.EmbeddedCensusResourceNames())
+        {
+            var name = res.Substring("seed.census.".Length).Replace(".csv", "");
+            if (int.TryParse(name.Replace("pyramid_", ""), out int year))
+            {
+                var text = SeedLoader.ReadEmbeddedText(res);
+                if (text != null) s.CensusPyramidByYear[year] = SeedLoader.LoadCensusPyramidFromText(text, year);
+            }
+        }
+        // fallback: 缺失年份从 CensusSeedPyramids 取近似
+        foreach (var y in CensusSeedPyramids.AvailableYears)
+        {
+            if (!s.CensusPyramidByYear.ContainsKey(y))
+            {
+                var p = CensusSeedPyramids.Get(y);
+                if (p != null) s.CensusPyramidByYear[y] = p;
+            }
+        }
+        return s;
+    }
+
     private static Dictionary<int, double> ScaleWanToPersons(Dictionary<int, double> wan)
     {
         var d = new Dictionary<int, double>();

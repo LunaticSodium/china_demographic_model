@@ -1,0 +1,86 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:CompileBindings="False"
+             x:Class="ChinaDemographicModel.App.Views.InputsEditorView">
+    <Grid RowDefinitions="Auto,*,Auto">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+            <TextBlock Text="输入编辑 · " Classes="section" VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding CurrentYear}" Classes="accent"
+                       FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            <TextBlock Classes="subtitle" VerticalAlignment="Center" Margin="12,0,0,0"
+                       Text="修改当前年的输入向量。锁定历史模式下，对已观测年的总出生数 / 性别比 会在 Run 时被强制还原。"/>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="0,0,8,0">
+                <Border Classes="card" Margin="0,0,0,12">
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                        <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="基础输入" Classes="section" Margin="0,0,0,10"/>
+
+                        <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,12,12">
+                            <TextBlock Text="当年总出生数（万人）" Classes="metricLabel"/>
+                            <Slider Minimum="0" Maximum="3500" SmallChange="10" LargeChange="100"
+                                    Value="{Binding EditBirthsWan, Mode=TwoWay}" Margin="0,4,0,2"/>
+                            <TextBlock Text="{Binding EditBirthsWan, StringFormat={}{0:0}}" Classes="accent" FontSize="14"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="1" Margin="12,0,0,12">
+                            <TextBlock Text="出生性别比（男/100女）" Classes="metricLabel"/>
+                            <Slider Minimum="95" Maximum="125" SmallChange="0.1" LargeChange="1"
+                                    Value="{Binding EditSrb, Mode=TwoWay}" Margin="0,4,0,2"/>
+                            <TextBlock Text="{Binding EditSrb, StringFormat={}{0:0.0}}" Classes="accent" FontSize="14"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,12,12">
+                            <TextBlock Text="总和生育率 TFR" Classes="metricLabel"/>
+                            <Slider Minimum="0.5" Maximum="6.5" SmallChange="0.01" LargeChange="0.1"
+                                    Value="{Binding EditTfr, Mode=TwoWay}" Margin="0,4,0,2"/>
+                            <TextBlock Text="{Binding EditTfr, StringFormat={}{0:0.00}}" Classes="accent" FontSize="14"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="2" Grid.Column="1" Margin="12,0,0,12">
+                            <TextBlock Text="粗结婚率（‰）" Classes="metricLabel"/>
+                            <Slider Minimum="0" Maximum="14" SmallChange="0.05" LargeChange="0.5"
+                                    Value="{Binding EditMarriageRate, Mode=TwoWay}" Margin="0,4,0,2"/>
+                            <TextBlock Text="{Binding EditMarriageRate, StringFormat={}{0:0.00}}" Classes="accent" FontSize="14"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,12,12">
+                            <TextBlock Text="平均初婚年龄（男）" Classes="metricLabel"/>
+                            <Slider Minimum="18" Maximum="40" SmallChange="0.1" LargeChange="1"
+                                    Value="{Binding EditMafmMale, Mode=TwoWay}" Margin="0,4,0,2"/>
+                            <TextBlock Text="{Binding EditMafmMale, StringFormat={}{0:0.0}}" Classes="accent" FontSize="14"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="3" Grid.Column="1" Margin="12,0,0,12">
+                            <TextBlock Text="平均初婚年龄（女）" Classes="metricLabel"/>
+                            <Slider Minimum="18" Maximum="40" SmallChange="0.1" LargeChange="1"
+                                    Value="{Binding EditMafmFemale, Mode=TwoWay}" Margin="0,4,0,2"/>
+                            <TextBlock Text="{Binding EditMafmFemale, StringFormat={}{0:0.0}}" Classes="accent" FontSize="14"/>
+                        </StackPanel>
+
+                        <Border Grid.Row="4" Grid.ColumnSpan="2" CornerRadius="8" Padding="12,8"
+                                Background="{StaticResource BgSurfaceBrush}" Margin="0,4,0,0">
+                            <TextBlock Classes="subtitle"
+                                       Text="说明：六个滑条对应该年的核心输入。修改后点上方'重跑投影'。如已开启锁定历史，1978–2024 已观测年的总出生 / 性别比将被回退到观测值；初婚年龄 / TFR / 结婚率 / 死亡率 schedule 仍可被反事实修改并通过 Calibrator 重整 ASFR。"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <Border Classes="card">
+                    <StackPanel>
+                        <TextBlock Text="高级 · ASFR / 死亡率分布" Classes="section"/>
+                        <TextBlock Classes="subtitle"
+                                   Text="（后续：折线编辑 ASFR(15..49) 与男女年龄死亡率曲线。当前 ASFR 由 FertilityModel 从 TFR + 平均初婚年龄推导；死亡率取自 CensusLifeTables（5 普查实证 q(x)，范围外 Brass shift），仅暴露上方六个标量。）"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Grid Grid.Row="2" Margin="0,12,0,0" ColumnDefinitions="*,Auto">
+            <TextBlock Grid.Column="0" Classes="subtitle" VerticalAlignment="Center"
+                       Text="{Binding EditHint}"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Content="应用到当前年" Classes="primary"
+                        Command="{Binding ApplyEditsCommand}"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

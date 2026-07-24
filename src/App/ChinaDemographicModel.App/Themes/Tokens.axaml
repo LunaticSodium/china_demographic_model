@@ -1,0 +1,41 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- 设计令牌 / design tokens（port 自 WPF ModernTheme） -->
+    <Color x:Key="BgBase">#FF0B1220</Color>
+    <Color x:Key="BgSurface">#FF111827</Color>
+    <Color x:Key="BgCard">#FF1E293B</Color>
+    <Color x:Key="BgElev">#FF334155</Color>
+    <Color x:Key="BgHover">#FF3F4A60</Color>
+    <Color x:Key="BorderCol">#FF334155</Color>
+    <Color x:Key="BorderStrong">#FF475569</Color>
+    <Color x:Key="TextPrimary">#FFF1F5F9</Color>
+    <Color x:Key="TextSecondary">#FF94A3B8</Color>
+    <Color x:Key="TextMuted">#FF64748B</Color>
+    <Color x:Key="AccentPrimary">#FF38BDF8</Color>
+    <Color x:Key="AccentSecondary">#FF818CF8</Color>
+    <Color x:Key="AccentTertiary">#FFFB7185</Color>
+    <Color x:Key="Danger">#FFF87171</Color>
+    <Color x:Key="Warn">#FFFBBF24</Color>
+    <Color x:Key="Success">#FF4ADE80</Color>
+    <Color x:Key="Forecast">#FF67E8F9</Color>
+    <Color x:Key="Census">#FF4ADE80</Color>
+
+    <SolidColorBrush x:Key="BgBaseBrush" Color="{StaticResource BgBase}"/>
+    <SolidColorBrush x:Key="BgSurfaceBrush" Color="{StaticResource BgSurface}"/>
+    <SolidColorBrush x:Key="BgCardBrush" Color="{StaticResource BgCard}"/>
+    <SolidColorBrush x:Key="BgElevBrush" Color="{StaticResource BgElev}"/>
+    <SolidColorBrush x:Key="BgHoverBrush" Color="{StaticResource BgHover}"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderCol}"/>
+    <SolidColorBrush x:Key="BorderStrongBrush" Color="{StaticResource BorderStrong}"/>
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondary}"/>
+    <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMuted}"/>
+    <SolidColorBrush x:Key="AccentPrimaryBrush" Color="{StaticResource AccentPrimary}"/>
+    <SolidColorBrush x:Key="AccentSecondaryBrush" Color="{StaticResource AccentSecondary}"/>
+    <SolidColorBrush x:Key="AccentTertiaryBrush" Color="{StaticResource AccentTertiary}"/>
+    <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource Danger}"/>
+    <SolidColorBrush x:Key="WarnBrush" Color="{StaticResource Warn}"/>
+    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource Success}"/>
+    <SolidColorBrush x:Key="ForecastBrush" Color="{StaticResource Forecast}"/>
+    <SolidColorBrush x:Key="CensusBrush" Color="{StaticResource Census}"/>
+</ResourceDictionary>

@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:ChinaDemographicModel.App.Controls"
+             x:CompileBindings="False"
+             x:Class="ChinaDemographicModel.App.Views.TimeSeriesView">
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- 子组切换 -->
+        <Grid Grid.Row="0" Margin="0,0,0,12" ColumnDefinitions="Auto,*">
+            <Border Grid.Column="0" Classes="surface" Padding="4">
+                <StackPanel Orientation="Horizontal">
+                    <ToggleButton Content="万人组" Margin="2,0" Padding="14,6"
+                                  IsChecked="{Binding SelectedSeriesGroup, Converter={StaticResource EnumToBool}, ConverterParameter=TenThousandPeople, Mode=TwoWay}"/>
+                    <ToggleButton Content="万对组" Margin="2,0" Padding="14,6"
+                                  IsChecked="{Binding SelectedSeriesGroup, Converter={StaticResource EnumToBool}, ConverterParameter=TenThousandPairs, Mode=TwoWay}"/>
+                    <ToggleButton Content="比率组" Margin="2,0" Padding="14,6"
+                                  IsChecked="{Binding SelectedSeriesGroup, Converter={StaticResource EnumToBool}, ConverterParameter=Ratios, Mode=TwoWay}"/>
+                </StackPanel>
+            </Border>
+            <TextBlock Grid.Column="1" Classes="subtitle" Margin="14,0,0,0" VerticalAlignment="Center"
+                       Text="实线：当前场景 · 虚线：历史观测 · 红色竖线：当前年份"/>
+        </Grid>
+
+        <!-- 万人组 -->
+        <Grid Grid.Row="1" x:Name="PeopleGroup" RowDefinitions="*,*">
+            <Border Grid.Row="0" Classes="surface" Margin="0,0,0,8" Padding="6"><controls:MiniLineChart x:Name="BirthsPlot"/></Border>
+            <Border Grid.Row="1" Classes="surface" Padding="6"><controls:MiniLineChart x:Name="DeathsPlot"/></Border>
+        </Grid>
+
+        <!-- 万对组 -->
+        <Grid Grid.Row="1" x:Name="PairsGroup" IsVisible="False" RowDefinitions="*,*">
+            <Border Grid.Row="0" Classes="surface" Margin="0,0,0,8" Padding="6"><controls:MiniLineChart x:Name="MarriagesPlot"/></Border>
+            <Border Grid.Row="1" Classes="surface" Padding="6"><controls:MiniLineChart x:Name="DivorcesPlot"/></Border>
+        </Grid>
+
+        <!-- 比率组 -->
+        <Grid Grid.Row="1" x:Name="RatiosGroup" IsVisible="False" RowDefinitions="*,*,*">
+            <Border Grid.Row="0" Classes="surface" Margin="0,0,0,8" Padding="6"><controls:MiniLineChart x:Name="SrbPlot"/></Border>
+            <Border Grid.Row="1" Classes="surface" Margin="0,0,0,8" Padding="6"><controls:MiniLineChart x:Name="TfrPlot"/></Border>
+            <Border Grid.Row="2" Classes="surface" Padding="6"><controls:MiniLineChart x:Name="MarriageRatePlot"/></Border>
+        </Grid>
+
+        <TextBlock Grid.Row="2" Classes="subtitle" Margin="0,8,0,0" x:Name="FooterText"
+                   Text="万人组：出生 / 死亡（万人，对齐 NBS 年末口径）"/>
+    </Grid>
+</UserControl>

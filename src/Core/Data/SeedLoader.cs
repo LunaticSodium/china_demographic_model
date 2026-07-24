@@ -1,17 +1,42 @@
 using System.Globalization;
+using System.Reflection;
 using ChinaDemographicModel.Core.Models;
 
 namespace ChinaDemographicModel.Core.Data;
 
 /// 从 data/seed/*.csv 加载年度标量序列 + 普查年金字塔。
 /// CSV 格式：第一行 header，后续行数据。'#' 开头的行 / 空行忽略。
+///
+/// 两条加载路径，共用同一套解析逻辑：
+///   - 文件路径版（LoadYearlyScalar / LoadCensusPyramid）—— 桌面 / WPF，从 data/seed 目录读盘。
+///   - 文本版（...FromText）+ 内嵌资源版（ReadEmbeddedText）—— Android / iOS 等无相邻文件系统的平台，
+///     CSV 以 EmbeddedResource 形式打进 Core.dll，随引擎走到每个平台。
 public static class SeedLoader
 {
     public static Dictionary<int, double> LoadYearlyScalar(string csvPath, string valueColumn)
     {
+        if (!File.Exists(csvPath)) return new Dictionary<int, double>();
+        return LoadYearlyScalarFromLines(File.ReadAllLines(csvPath), valueColumn);
+    }
+
+    public static PopulationPyramid LoadCensusPyramid(string csvPath, int year)
+    {
+        if (!File.Exists(csvPath)) return new PopulationPyramid { Year = year };
+        return LoadCensusPyramidFromLines(File.ReadAllLines(csvPath), year);
+    }
+
+    // ---- 文本 / 行数组版（平台无关）----
+
+    public static Dictionary<int, double> LoadYearlyScalarFromText(string csvText, string valueColumn)
+        => LoadYearlyScalarFromLines(SplitLines(csvText), valueColumn);
+
+    public static PopulationPyramid LoadCensusPyramidFromText(string csvText, int year)
+        => LoadCensusPyramidFromLines(SplitLines(csvText), year);
+
+    private static Dictionary<int, double> LoadYearlyScalarFromLines(string[] lines, string valueColumn)
+    {
         var result = new Dictionary<int, double>();
-        if (!File.Exists(csvPath)) return result;
-        foreach (var (cols, dict) in ReadCsv(csvPath))
+        foreach (var (_, dict) in ReadCsv(lines))
         {
             if (!dict.TryGetValue("year", out var yStr) || !int.TryParse(yStr, out int year)) continue;
             if (!dict.TryGetValue(valueColumn, out var vStr)) continue;
@@ -21,11 +46,10 @@ public static class SeedLoader
         return result;
     }
 
-    public static PopulationPyramid LoadCensusPyramid(string csvPath, int year)
+    private static PopulationPyramid LoadCensusPyramidFromLines(string[] lines, int year)
     {
         var p = new PopulationPyramid { Year = year };
-        if (!File.Exists(csvPath)) return p;
-        foreach (var (_, dict) in ReadCsv(csvPath))
+        foreach (var (_, dict) in ReadCsv(lines))
         {
             if (!dict.TryGetValue("age", out var aStr) || !int.TryParse(aStr, out int age)) continue;
             if (age < 0 || age > PopulationPyramid.MaxAge) continue;
@@ -37,9 +61,30 @@ public static class SeedLoader
         return p;
     }
 
-    private static IEnumerable<(string[] Cols, Dictionary<string, string> Dict)> ReadCsv(string path)
+    private static string[] SplitLines(string text)
+        => text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
+
+    // ---- 内嵌资源（Android / iOS 及任意平台通用）----
+
+    /// 读取打进 Core.dll 的 seed CSV。logicalName 形如 "seed.births_yearly.csv"
+    /// 或 "seed.census.pyramid_2020.csv"（见 Core.csproj 的 EmbeddedResource LogicalName）。
+    /// 找不到返回 null。
+    public static string? ReadEmbeddedText(string logicalName)
     {
-        var lines = File.ReadAllLines(path);
+        var asm = typeof(SeedLoader).Assembly;
+        using var stream = asm.GetManifestResourceStream(logicalName);
+        if (stream == null) return null;
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
+    }
+
+    /// 枚举所有内嵌普查金字塔资源名（"seed.census.*.csv"）。
+    public static IEnumerable<string> EmbeddedCensusResourceNames()
+        => typeof(SeedLoader).Assembly.GetManifestResourceNames()
+            .Where(n => n.StartsWith("seed.census.", StringComparison.Ordinal) && n.EndsWith(".csv", StringComparison.Ordinal));
+
+    private static IEnumerable<(string[] Cols, Dictionary<string, string> Dict)> ReadCsv(string[] lines)
+    {
         if (lines.Length < 2) yield break;
 
         // 找到第一行非 # 注释、非空白行作为 header。
