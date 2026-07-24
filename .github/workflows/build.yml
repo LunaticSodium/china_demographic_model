@@ -4,6 +4,8 @@ name: build-all-platforms
 on:
   workflow_dispatch:
   push:
+    # 端口开发期间：推该分支即触发构建（产物在 run 页下载）。合并 main 前可移除。
+    branches: ['feat/avalonia-cross-platform']
     tags: ['v*']
 
 env:
