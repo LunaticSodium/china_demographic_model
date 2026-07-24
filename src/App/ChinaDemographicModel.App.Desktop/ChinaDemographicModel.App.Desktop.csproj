@@ -9,6 +9,8 @@
 
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- .ico 仅 Windows 嵌入；跨平台发布 (osx/linux) 时跳过，避免无谓告警 -->
+    <ApplicationIcon Condition="'$(RuntimeIdentifier)' == '' or $([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('win'))">appicon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>

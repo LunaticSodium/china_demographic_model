@@ -6,7 +6,7 @@
         xmlns:views="using:ChinaDemographicModel.App.Views"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ChinaDemographicModel.App.Views.MainWindow"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="ChinaDemographicModel.App">
+        Icon="/Assets/appicon.png"
+        Title="中国人口结构 · 工作台">
         <views:MainView />
 </Window>
