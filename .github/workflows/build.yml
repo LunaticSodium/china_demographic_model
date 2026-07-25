@@ -2,11 +2,9 @@ name: build-all-platforms
 
 # 触发：手动（workflow_dispatch，随时点按钮出测试包）或推 v* tag（顺带发 Release）。
 on:
-  workflow_dispatch:
+  workflow_dispatch:      # 手动「Run workflow」按钮（文件在默认分支后可用）
   push:
-    # 端口开发期间：推该分支即触发构建（产物在 run 页下载）。合并 main 前可移除。
-    branches: ['feat/avalonia-cross-platform']
-    tags: ['v*']
+    tags: ['v*']          # 推 v* tag → 构建全平台并发 Release
 
 env:
   DOTNET_VERSION: '10.0.x'
