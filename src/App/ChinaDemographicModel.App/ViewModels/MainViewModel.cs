@@ -123,6 +123,9 @@ public partial class MainViewModel : ObservableObject
         var forecastModel = ForecastRegistry.Resolve(scen.ForecastModelId);
         int lastObs = ctx.LastObservedYear;
 
+        // 死亡侧口径修正：观测年硬对齐 NBS 死亡数并记录 k(y)，预测年用拟合曲线平滑外推。
+        var mortCal = new MortalityCalibration();
+
         var cur = initialAligned;
         for (int y = cur.Year; y < YearMax; y++)
         {
@@ -159,6 +162,34 @@ public partial class MainViewModel : ObservableObject
                 inp.TotalBirths = derived;
             }
 
+            // 死亡侧修正（对称于出生侧观测锁）：
+            //   观测年 → 硬对齐 NBS 死亡数，记录 k(y)；
+            //   预测年 → 用 k(y) 的拟合曲线外推，保证边界连续、远期收敛。
+            //
+            // 幂等性：AlignDeathsToHistory 会就地缩放并持久化 q(x)，若不复位，
+            // 第二次重跑时 k 会退化为 1、预测年修正丢失 → 边界跳变复现。
+            // 因此观测年每次都从 CensusLifeTables 重建基准 q(x)（形状 + e0 水平），
+            // 使 RunProjection 成为 (数据, 模型, 编辑) 的纯函数。
+            if (y <= lastObs)
+            {
+                double eM = ScenarioBuilder.LookupOrInterp(Historical.E0MaleByYear, y, fallback: 0);
+                double eF = ScenarioBuilder.LookupOrInterp(Historical.E0FemaleByYear, y, fallback: 0);
+                if (eM > 0) inp.MortalityMale = CensusLifeTables.GetQx(y, isMale: true, targetE0: eM);
+                if (eF > 0) inp.MortalityFemale = CensusLifeTables.GetQx(y, isMale: false, targetE0: eF);
+            }
+
+            if (y <= lastObs && Historical.DeathsByYear.TryGetValue(y, out var obsDeaths) && obsDeaths > 0)
+            {
+                double k = applyHistoryLock
+                    ? _calibrator.AlignDeathsToHistory(inp, obsDeaths, cur)
+                    : SafeRatio(obsDeaths, Calibrator.PredictDeaths(inp, cur));
+                mortCal.Observe(y, k);
+            }
+            else if (y > lastObs)
+            {
+                Calibrator.ScaleMortality(inp, mortCal.ProjectK(y));
+            }
+
             var next = _projector.Project(cur, inp);
 
             // 显性口径修正：对齐到 NBS 年末（逐年连续）
@@ -170,8 +201,29 @@ public partial class MainViewModel : ObservableObject
             cur = next;
         }
 
+        // 末年 YearMax 本身不再向前投影，循环不会为它生成输入向量 →
+        // 年份拖到 2050 时右栏指标会显示 "—"。这里补一份供显示用。
+        if (YearMax > lastObs && !scen.EditedYears.Contains(YearMax))
+        {
+            var lastInp = forecastModel.Project(YearMax, ctx);
+            Calibrator.ScaleMortality(lastInp, mortCal.ProjectK(YearMax));
+            if (lastInp.TotalBirths <= 0 && scen.ProjectedByYear.TryGetValue(YearMax, out var pEnd))
+            {
+                double derived = 0;
+                for (int a = 15; a <= 49 && a <= PopulationPyramid.MaxAge; a++)
+                    derived += pEnd.Female[a] * lastInp.AgeSpecificFertility[a];
+                lastInp.TotalBirths = derived;
+            }
+            scen.InputsByYear[YearMax] = lastInp;
+        }
+
+        if (mortCal.PointCount >= 2)
+            AppendLog($"死亡侧校准: {mortCal.PointCount} 个观测年, 末年 k={mortCal.ProjectK(lastObs):0.000}, 拟合 R²={mortCal.RSquared:0.000}");
+
         RecomputePyramidMax();
     }
+
+    private static double SafeRatio(double num, double den) => den > 0 ? num / den : 1.0;
 
     /// 计算所有 scenario × year × age × sex 的最大单龄人数（PyramidView X 轴固定刻度）。
     private void RecomputePyramidMax()
