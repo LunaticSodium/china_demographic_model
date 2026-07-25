@@ -458,6 +458,77 @@ public partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(EditMafmFemale));
     }
 
+    // ---- 出生数 ↔ TFR 联动（B2：单变量、消除过定）----
+    // 关系：births = TFR × K，K = Σ_{15..49} 育龄女性 × 归一化 ASFR 形状（当前年金字塔女性 + 当前 MAFM）。
+    // 拖动出生滑条 → TFR 联动；拖动 TFR → 出生联动；改 MAFM（形状）→ 保持 TFR、重算出生。
+    private bool _syncingEditPair;
+
+    /// 单位 TFR 对应的出生人数 K。无当前金字塔时返回 0（联动跳过）。
+    private double CurrentReproWeight()
+    {
+        var p = CurrentPyramid;
+        if (p == null) return 0;
+        var shape = _builder.Fertility.BuildAgeSpecificFertility(1.0, EditMafmFemale); // TFR=1 → 形状归一
+        double k = 0;
+        for (int a = 15; a <= 49 && a <= PopulationPyramid.MaxAge; a++)
+            k += p.Female[a] * shape[a];
+        return k;
+    }
+
+    partial void OnEditBirthsWanChanged(double value)
+    {
+        if (_syncingEditPair) return;
+        double k = CurrentReproWeight();
+        if (k <= 0) return;
+        _syncingEditPair = true;
+        EditTfr = Math.Clamp(value * 10000.0 / k, 0.5, 6.5);
+        _syncingEditPair = false;
+    }
+
+    partial void OnEditTfrChanged(double value)
+    {
+        if (_syncingEditPair) return;
+        double k = CurrentReproWeight();
+        if (k <= 0) return;
+        _syncingEditPair = true;
+        EditBirthsWan = Math.Clamp(value * k / 10000.0, 0, 3500);
+        _syncingEditPair = false;
+    }
+
+    partial void OnEditMafmFemaleChanged(double value)
+    {
+        if (_syncingEditPair) return;
+        double k = CurrentReproWeight();
+        if (k <= 0) return;
+        _syncingEditPair = true;
+        EditBirthsWan = Math.Clamp(EditTfr * k / 10000.0, 0, 3500);
+        _syncingEditPair = false;
+    }
+
+    /// 为 InputsByYear 里尚不存在的年新建输入时，从最近邻年克隆死亡率/ASFR 结构，
+    /// 避免零死亡率导致该年无死亡、人口虚增（B4）。
+    private DemographicInputs SeedNewInput(Scenario scen, int year)
+    {
+        DemographicInputs? src = null;
+        for (int d = 1; d < 40 && src == null; d++)
+        {
+            if (scen.InputsByYear.TryGetValue(year - d, out var a)) src = a;
+            else if (scen.InputsByYear.TryGetValue(year + d, out var b)) src = b;
+        }
+        var inp = new DemographicInputs { Year = year };
+        if (src != null)
+        {
+            inp.MortalityMale = (double[])src.MortalityMale.Clone();
+            inp.MortalityFemale = (double[])src.MortalityFemale.Clone();
+            inp.AgeSpecificFertility = (double[])src.AgeSpecificFertility.Clone();
+            inp.SexRatioAtBirth = src.SexRatioAtBirth;
+            inp.MeanAgeFirstMarriageMale = src.MeanAgeFirstMarriageMale;
+            inp.MeanAgeFirstMarriageFemale = src.MeanAgeFirstMarriageFemale;
+            inp.CrudeMarriageRate = src.CrudeMarriageRate;
+        }
+        return inp;
+    }
+
     partial void OnCurrentYearChanged(int value)
     {
         SyncEditFieldsFromInputs();
@@ -513,7 +584,7 @@ public partial class MainViewModel : ObservableObject
         if (scen == null) return;
         if (!scen.InputsByYear.TryGetValue(CurrentYear, out var inp))
         {
-            inp = new DemographicInputs { Year = CurrentYear };
+            inp = SeedNewInput(scen, CurrentYear);   // B4：带死亡率结构，不再零死亡率
             scen.InputsByYear[CurrentYear] = inp;
         }
         inp.TotalBirths = EditBirthsWan * 10000.0;
@@ -523,7 +594,20 @@ public partial class MainViewModel : ObservableObject
         inp.MeanAgeFirstMarriageFemale = EditMafmFemale;
         inp.AgeSpecificFertility = _builder.Fertility.BuildAgeSpecificFertility(EditTfr, EditMafmFemale);
         scen.EditedYears.Add(CurrentYear);
-        AppendLog($"已应用编辑 → {CurrentYear}");
+
+        // B1：立即重跑投影，让编辑生效到金字塔 / 时间序列（否则 ProjectedByYear 是旧的）。
+        RunProjectionForScenario(scen, LockToHistory);
+
+        // B3：历史锁 + 观测年 → 编辑被回退，明确告知，别让用户以为"没反应"。
+        if (LockToHistory && CurrentYear <= LastObservedYear)
+            EditHint = $"注意：历史锁开启，{CurrentYear} 是观测年 —— 出生数 / 性别比 / 结婚率已回退到 NBS 观测值。" +
+                       "要真正改历史，请先「＋克隆为反事实」（克隆默认关闭历史锁）。";
+        else
+            EditHint = $"已应用并重跑投影 → {CurrentYear}。生育 / 死亡是 {CurrentYear}→{CurrentYear + 1} 的转移，" +
+                       $"因此结构变化体现在 {CurrentYear + 1} 及之后（看时间序列或把年份拖到 {CurrentYear + 1}）。";
+
+        AppendLog($"已应用编辑 + 重跑投影 → {CurrentYear}");
+        ProjectionStamp++;
         NotifyDerived();
     }
 
