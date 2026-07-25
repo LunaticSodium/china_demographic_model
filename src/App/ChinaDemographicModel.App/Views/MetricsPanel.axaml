@@ -1,0 +1,80 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:CompileBindings="False"
+             x:Class="ChinaDemographicModel.App.Views.MetricsPanel">
+    <!-- 当前年指标 / 偏离基线 / 日志 / 数据来源。
+         宽屏放在右栏，窄屏（手机）作为「指标」标签页。 -->
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <Border Classes="card" Classes.forecast="{Binding IsCurrentYearForecast}" Margin="0,0,0,14">
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+                    <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="{Binding CurrentYearMetricsHeader}" Classes="section"/>
+
+                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,6,8,10">
+                        <TextBlock Text="总人口" Classes="metricLabel"/>
+                        <TextBlock Text="{Binding TotalPopulationDisplay}" Classes="metricValue"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="8,6,0,10">
+                        <TextBlock Text="当年出生" Classes="metricLabel"/>
+                        <TextBlock Text="{Binding BirthsDisplay}" Classes="metricValue"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,8,10">
+                        <TextBlock Text="出生性别比" Classes="metricLabel"/>
+                        <TextBlock Text="{Binding SrbDisplay}" Classes="metricValue"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="2" Grid.Column="1" Margin="8,0,0,10">
+                        <TextBlock Text="TFR" Classes="metricLabel"/>
+                        <TextBlock Text="{Binding TfrDisplay}" Classes="metricValue"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,8,10">
+                        <TextBlock Text="平均初婚（男）" Classes="metricLabel"/>
+                        <TextBlock Text="{Binding MafmMaleDisplay}" Classes="metricValue"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="3" Grid.Column="1" Margin="8,0,0,10">
+                        <TextBlock Text="平均初婚（女）" Classes="metricLabel"/>
+                        <TextBlock Text="{Binding MafmFemaleDisplay}" Classes="metricValue"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="4" Grid.Column="0" Margin="0,0,8,10">
+                        <TextBlock Text="粗结婚率（‰）" Classes="metricLabel"/>
+                        <TextBlock Text="{Binding MarriageRateDisplay}" Classes="metricValue"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="4" Grid.Column="1" Margin="8,0,0,10">
+                        <TextBlock Text="当年死亡（观测）" Classes="metricLabel"/>
+                        <TextBlock Text="{Binding DeathsDisplay}" Classes="metricValue"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2">
+                        <TextBlock Text="e0 (观测，男/女)" Classes="metricLabel"/>
+                        <TextBlock Text="{Binding E0Display}" Classes="metricValue"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Border Classes="card" Margin="0,0,0,14">
+                <StackPanel>
+                    <TextBlock Text="偏离基线" Classes="section"/>
+                    <TextBlock Text="{Binding DeviationReport}" Classes="subtitle"/>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card" Margin="0,0,0,14">
+                <StackPanel>
+                    <TextBlock Text="日志" Classes="section"/>
+                    <TextBlock Text="{Binding StatusLog}" Classes="subtitle" MaxHeight="200"/>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card">
+                <StackPanel>
+                    <TextBlock Text="数据来源 / 引用" Classes="section"/>
+                    <TextBlock Text="{Binding CitationText}" Classes="mono"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="11" TextWrapping="Wrap" MaxHeight="280"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

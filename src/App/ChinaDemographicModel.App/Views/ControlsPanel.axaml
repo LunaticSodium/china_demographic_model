@@ -1,0 +1,78 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:CompileBindings="False"
+             x:Class="ChinaDemographicModel.App.Views.ControlsPanel">
+    <!-- 场景 / 历史锁 / 预测模型 / 数据健康。
+         宽屏放在左栏，窄屏（手机）作为「设置」标签页 —— 同一控件复用，避免布局重复。 -->
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <!-- 窄屏（手机）专用：顶栏放不下按钮时，操作在这里。ShowActions 控制。 -->
+            <Border x:Name="ActionsCard" Classes="card" Margin="0,0,0,14" IsVisible="False">
+                <StackPanel>
+                    <TextBlock Text="操作" Classes="section"/>
+                    <Button Content="▶ 重跑投影" Classes="primary" HorizontalAlignment="Stretch"
+                            Command="{Binding RunProjectionCommand}" Margin="0,0,0,8"/>
+                    <Button Content="↺ 重置基线" Classes="ghost" HorizontalAlignment="Stretch"
+                            Command="{Binding ResetScenarioCommand}"/>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card" Margin="0,0,0,14">
+                <StackPanel>
+                    <TextBlock Text="场景" Classes="section"/>
+                    <ListBox ItemsSource="{Binding Scenarios}"
+                             SelectedItem="{Binding ActiveScenario, Mode=TwoWay}"
+                             MaxHeight="180" Background="Transparent">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="8" Height="8" Margin="0,0,8,0" Fill="#FF38BDF8"/>
+                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <Button Content="＋克隆为反事实" Command="{Binding CloneScenarioCommand}"
+                            Classes="ghost" HorizontalAlignment="Stretch" Margin="0,8,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card" Margin="0,0,0,14">
+                <StackPanel>
+                    <TextBlock Text="历史锁" Classes="section"/>
+                    <CheckBox Content="锁定历史观测" IsChecked="{Binding LockToHistory, Mode=TwoWay}" Margin="0,0,0,6"/>
+                    <TextBlock Classes="subtitle"
+                               Text="开启时：所有 1978–2024 已观测年的出生数 / 性别比强制等于历史。仅 ASFR / 死亡率 / 预测年可被反事实修改。"/>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card" Margin="0,0,0,14">
+                <StackPanel>
+                    <TextBlock Text="预测模型" Classes="section"/>
+                    <ListBox ItemsSource="{Binding AllForecastModels}"
+                             SelectedValue="{Binding SelectedForecastModelId, Mode=TwoWay}"
+                             SelectedValueBinding="{Binding Id}"
+                             Background="Transparent" MaxHeight="240">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,2,0,4">
+                                    <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding Description}" Classes="subtitle" Margin="0,1,0,0"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <TextBlock Classes="subtitle" Margin="0,4,0,0"
+                               Text="模型仅作用于 > 2025 的预测年。观测年由 NBS / 民政部 数据锁定。"/>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card">
+                <StackPanel>
+                    <TextBlock Text="数据健康" Classes="section"/>
+                    <TextBlock Text="{Binding HealthReport}" Classes="subtitle"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

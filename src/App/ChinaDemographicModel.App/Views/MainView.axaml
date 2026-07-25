@@ -12,20 +12,24 @@
         <vm:MainViewModel />
     </Design.DataContext>
 
+    <!-- 响应式：宽屏三栏；窄屏（手机）折叠为单栏 + 标签页，见 code-behind ApplyLayout。 -->
     <Border Background="{StaticResource BgBaseBrush}">
-        <Grid Margin="20" RowDefinitions="Auto,*">
+        <Grid x:Name="RootGrid" Margin="20" RowDefinitions="Auto,*">
 
             <!-- 顶部条 -->
             <Border Grid.Row="0" Classes="card" Margin="0,0,0,16" Padding="20,14">
-                <Grid ColumnDefinitions="Auto,*,Auto">
-                    <StackPanel Grid.Column="0" Orientation="Vertical">
+                <Grid x:Name="TopBar" ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
+                    <StackPanel x:Name="TitleBlock" Grid.Column="0" Grid.Row="0" Orientation="Vertical">
                         <TextBlock Text="中国人口结构 · 工作台" Classes="title"/>
-                        <TextBlock Text="Cohort-Component projection · 历史一致性约束 · 反事实推演"
+                        <TextBlock x:Name="Subtitle"
+                                   Text="Cohort-Component projection · 历史一致性约束 · 反事实推演"
                                    Classes="subtitle" Margin="0,2,0,0"/>
                     </StackPanel>
 
-                    <Grid Grid.Column="1" Margin="20,0,16,0" VerticalAlignment="Center" ColumnDefinitions="Auto,*,Auto">
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,14,0">
+                    <Grid x:Name="SliderHost" Grid.Column="1" Grid.Row="0" Margin="20,0,16,0"
+                          VerticalAlignment="Center" ColumnDefinitions="Auto,*,Auto">
+                        <StackPanel x:Name="LegendPanel" Grid.Column="0" Orientation="Horizontal"
+                                    VerticalAlignment="Center" Margin="0,0,14,0">
                             <Border Width="8" Height="8" CornerRadius="2" Margin="0,0,4,0" Background="{StaticResource BgElevBrush}"/>
                             <TextBlock Text="一般" Classes="subtitle" Margin="0,0,10,0" VerticalAlignment="Center"/>
                             <Border Width="8" Height="8" CornerRadius="2" Margin="0,0,4,0" Background="{StaticResource CensusBrush}"/>
@@ -35,7 +39,7 @@
                             <Border Width="8" Height="8" CornerRadius="2" Margin="0,0,4,0" Background="{StaticResource WarnBrush}"/>
                             <TextBlock Text="反事实" Classes="subtitle" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <controls:YearSlider Grid.Column="1"
+                        <controls:YearSlider x:Name="YearSliderCtl" Grid.Column="1"
                                              Minimum="{Binding YearMin}"
                                              Maximum="{Binding YearMax}"
                                              Value="{Binding CurrentYear, Mode=TwoWay}"
@@ -47,162 +51,40 @@
                                    FontSize="26" FontWeight="Light" MinWidth="68" VerticalAlignment="Center"/>
                     </Grid>
 
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel x:Name="TopButtons" Grid.Column="2" Grid.Row="0"
+                                Orientation="Horizontal" VerticalAlignment="Center">
                         <Button Content="↺ 重置基线" Classes="ghost" Command="{Binding ResetScenarioCommand}" Margin="0,0,8,0"/>
                         <Button Content="▶ 重跑投影" Classes="primary" Command="{Binding RunProjectionCommand}"/>
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <!-- 主区 三栏 -->
-            <Grid Grid.Row="1" ColumnDefinitions="280,*,340">
+            <!-- 主区 -->
+            <Grid x:Name="MainArea" Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="280"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="340"/>
+                </Grid.ColumnDefinitions>
 
-                <!-- LEFT -->
-                <ScrollViewer Grid.Column="0" Margin="0,0,16,0" VerticalScrollBarVisibility="Auto">
-                    <StackPanel>
-                        <Border Classes="card" Margin="0,0,0,14">
-                            <StackPanel>
-                                <TextBlock Text="场景" Classes="section"/>
-                                <ListBox ItemsSource="{Binding Scenarios}"
-                                         SelectedItem="{Binding ActiveScenario, Mode=TwoWay}"
-                                         MaxHeight="180" Background="Transparent">
-                                    <ListBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <StackPanel Orientation="Horizontal">
-                                                <Ellipse Width="8" Height="8" Margin="0,0,8,0" Fill="#FF38BDF8"/>
-                                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </ListBox.ItemTemplate>
-                                </ListBox>
-                                <Button Content="＋克隆为反事实" Command="{Binding CloneScenarioCommand}"
-                                        Classes="ghost" HorizontalAlignment="Stretch" Margin="0,8,0,0"/>
-                            </StackPanel>
-                        </Border>
+                <views:ControlsPanel x:Name="LeftPanel" Grid.Column="0" Margin="0,0,16,0"/>
 
-                        <Border Classes="card" Margin="0,0,0,14">
-                            <StackPanel>
-                                <TextBlock Text="历史锁" Classes="section"/>
-                                <CheckBox Content="锁定历史观测" IsChecked="{Binding LockToHistory, Mode=TwoWay}" Margin="0,0,0,6"/>
-                                <TextBlock Classes="subtitle"
-                                           Text="开启时：所有 1978–2024 已观测年的出生数 / 性别比强制等于历史。仅 ASFR / 死亡率 / 预测年可被反事实修改。"/>
-                            </StackPanel>
-                        </Border>
-
-                        <Border Classes="card" Margin="0,0,0,14">
-                            <StackPanel>
-                                <TextBlock Text="预测模型" Classes="section"/>
-                                <ListBox ItemsSource="{Binding AllForecastModels}"
-                                         SelectedValue="{Binding SelectedForecastModelId, Mode=TwoWay}"
-                                         SelectedValueBinding="{Binding Id}"
-                                         Background="Transparent" MaxHeight="240">
-                                    <ListBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <StackPanel Margin="0,2,0,4">
-                                                <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"/>
-                                                <TextBlock Text="{Binding Description}" Classes="subtitle" Margin="0,1,0,0"/>
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </ListBox.ItemTemplate>
-                                </ListBox>
-                                <TextBlock Classes="subtitle" Margin="0,4,0,0"
-                                           Text="模型仅作用于 > 2025 的预测年。观测年由 NBS / 民政部 数据锁定。"/>
-                            </StackPanel>
-                        </Border>
-
-                        <Border Classes="card">
-                            <StackPanel>
-                                <TextBlock Text="数据健康" Classes="section"/>
-                                <TextBlock Text="{Binding HealthReport}" Classes="subtitle"/>
-                            </StackPanel>
-                        </Border>
-                    </StackPanel>
-                </ScrollViewer>
-
-                <!-- CENTER -->
                 <Border Grid.Column="1" Classes="card" Padding="20">
                     <TabControl>
                         <TabItem Header="人口金字塔"><views:PyramidView/></TabItem>
                         <TabItem Header="时间序列"><views:TimeSeriesView/></TabItem>
                         <TabItem Header="输入编辑"><views:InputsEditorView/></TabItem>
+                        <!-- 窄屏时才出现：把左右栏收进标签页 -->
+                        <TabItem x:Name="NarrowControlsTab" Header="设置" IsVisible="False">
+                            <views:ControlsPanel ShowActions="True"/>
+                        </TabItem>
+                        <TabItem x:Name="NarrowMetricsTab" Header="指标" IsVisible="False">
+                            <views:MetricsPanel/>
+                        </TabItem>
                     </TabControl>
                 </Border>
 
-                <!-- RIGHT -->
-                <ScrollViewer Grid.Column="2" Margin="16,0,0,0" VerticalScrollBarVisibility="Auto">
-                    <StackPanel>
-                        <Border Classes="card" Classes.forecast="{Binding IsCurrentYearForecast}" Margin="0,0,0,14">
-                            <Grid ColumnDefinitions="*,*"
-                                  RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
-                                <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="{Binding CurrentYearMetricsHeader}" Classes="section"/>
-
-                                <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,6,8,10">
-                                    <TextBlock Text="总人口" Classes="metricLabel"/>
-                                    <TextBlock Text="{Binding TotalPopulationDisplay}" Classes="metricValue"/>
-                                </StackPanel>
-                                <StackPanel Grid.Row="1" Grid.Column="1" Margin="8,6,0,10">
-                                    <TextBlock Text="当年出生" Classes="metricLabel"/>
-                                    <TextBlock Text="{Binding BirthsDisplay}" Classes="metricValue"/>
-                                </StackPanel>
-
-                                <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,8,10">
-                                    <TextBlock Text="出生性别比" Classes="metricLabel"/>
-                                    <TextBlock Text="{Binding SrbDisplay}" Classes="metricValue"/>
-                                </StackPanel>
-                                <StackPanel Grid.Row="2" Grid.Column="1" Margin="8,0,0,10">
-                                    <TextBlock Text="TFR" Classes="metricLabel"/>
-                                    <TextBlock Text="{Binding TfrDisplay}" Classes="metricValue"/>
-                                </StackPanel>
-
-                                <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,8,10">
-                                    <TextBlock Text="平均初婚（男）" Classes="metricLabel"/>
-                                    <TextBlock Text="{Binding MafmMaleDisplay}" Classes="metricValue"/>
-                                </StackPanel>
-                                <StackPanel Grid.Row="3" Grid.Column="1" Margin="8,0,0,10">
-                                    <TextBlock Text="平均初婚（女）" Classes="metricLabel"/>
-                                    <TextBlock Text="{Binding MafmFemaleDisplay}" Classes="metricValue"/>
-                                </StackPanel>
-
-                                <StackPanel Grid.Row="4" Grid.Column="0" Margin="0,0,8,10">
-                                    <TextBlock Text="粗结婚率（‰）" Classes="metricLabel"/>
-                                    <TextBlock Text="{Binding MarriageRateDisplay}" Classes="metricValue"/>
-                                </StackPanel>
-                                <StackPanel Grid.Row="4" Grid.Column="1" Margin="8,0,0,10">
-                                    <TextBlock Text="当年死亡（观测）" Classes="metricLabel"/>
-                                    <TextBlock Text="{Binding DeathsDisplay}" Classes="metricValue"/>
-                                </StackPanel>
-
-                                <StackPanel Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2">
-                                    <TextBlock Text="e0 (观测，男/女)" Classes="metricLabel"/>
-                                    <TextBlock Text="{Binding E0Display}" Classes="metricValue"/>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
-
-                        <Border Classes="card" Margin="0,0,0,14">
-                            <StackPanel>
-                                <TextBlock Text="偏离基线" Classes="section"/>
-                                <TextBlock Text="{Binding DeviationReport}" Classes="subtitle"/>
-                            </StackPanel>
-                        </Border>
-
-                        <Border Classes="card" Margin="0,0,0,14">
-                            <StackPanel>
-                                <TextBlock Text="日志" Classes="section"/>
-                                <TextBlock Text="{Binding StatusLog}" Classes="subtitle" MaxHeight="200"/>
-                            </StackPanel>
-                        </Border>
-
-                        <Border Classes="card">
-                            <StackPanel>
-                                <TextBlock Text="数据来源 / 引用" Classes="section"/>
-                                <TextBlock Text="{Binding CitationText}" Classes="mono"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
-                                           FontSize="11" TextWrapping="Wrap" MaxHeight="280"/>
-                            </StackPanel>
-                        </Border>
-                    </StackPanel>
-                </ScrollViewer>
+                <views:MetricsPanel x:Name="RightPanel" Grid.Column="2" Margin="16,0,0,0"/>
             </Grid>
         </Grid>
     </Border>

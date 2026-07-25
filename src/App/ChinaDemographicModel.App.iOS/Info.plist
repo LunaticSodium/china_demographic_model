@@ -5,7 +5,7 @@
 	<key>CFBundleDisplayName</key>
 	<string>ChinaDemographicModel.App</string>
 	<key>CFBundleIdentifier</key>
-	<string>companyName.ChinaDemographicModel.App</string>
+	<string>io.github.lunaticsodium.chinademographic</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
