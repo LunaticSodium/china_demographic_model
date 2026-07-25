@@ -41,20 +41,25 @@ public static class CensusLifeTables
     };
 
     /// 给定年份 + 性别，返回单岁 q(x) 数组（长度 = MaxAge+1）。
-    /// 年份在普查年之间 → 线性插值。
-    /// 早于 1981 → 用 1981 + extrapolation (向 1981 之前年份用 1981 自身，不做反推)。
-    /// 晚于 2020 → 用 2020 + 用 targetE0 做 Brass 平移（如果给出）。
+    /// 年份在普查年之间 → 线性插值取得**形状**；早于 1981 / 晚于 2020 → 取端点形状。
+    /// 随后：只要给出 targetE0，就用 Brass logit 平移把该形状校准到目标 e0。
+    ///
+    /// **为什么所有年份都校准**（v1.2.1 修复）：
+    /// 此前只在普查区间**之外**才做 Brass 校准，于是 2020→2021 存在开关式突变——
+    /// 2020 用未校准的原表（隐含 e0 ≈ 69.0/74.9，比公布的 75.4/80.9 低约 6 岁，
+    /// 死亡数因此高出 NBS 观测 26%），2021 起突然对齐 e0，模型死亡从 1257万 跌到 702万。
+    /// 本表数值系公报近似整理（见类注释 ±5-10%），其隐含 e0 不可直接采信；
+    /// 而 e0 序列是普查 / WHO 公布的观测锚点。按 PHILOSOPHY.md §5「数值全盘采纳」，
+    /// 表只提供**年龄形状**，**水平**一律由观测 e0 定。这样时间轴上连续、且处处与 e0 一致。
     public static double[] GetQx(int year, bool isMale, double? targetE0 = null)
     {
         var keyDict = isMale ? KeyMaleQ : KeyFemaleQ;
         double[] keyQ = InterpolateOverTime(year, keyDict);
         double[] qx = ExpandToSingleAges(keyQ);
 
-        // 如果年份在普查范围外且给定了 targetE0，做 Brass logit shift 微调
-        if (targetE0.HasValue && (year < CensusYears[0] || year > CensusYears[^1]))
-        {
+        if (targetE0.HasValue)
             qx = ApplyBrassShiftToTargetE0(qx, targetE0.Value);
-        }
+
         return qx;
     }
 
