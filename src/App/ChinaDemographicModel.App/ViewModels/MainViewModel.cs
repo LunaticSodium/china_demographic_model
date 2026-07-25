@@ -218,7 +218,7 @@ public partial class MainViewModel : ObservableObject
         }
 
         if (mortCal.PointCount >= 2)
-            AppendLog($"死亡侧校准: {mortCal.PointCount} 个观测年, 末年 k={mortCal.ProjectK(lastObs):0.000}, 拟合 R²={mortCal.RSquared:0.000}");
+            AppendLog($"死亡侧校准: {mortCal.PointCount} 观测年 · 水平 k={mortCal.Level:0.000} · 残差 RMSE={mortCal.Rmse:0.000} · 趋势 R²={mortCal.RSquared:0.00}（平台期 R² 低属正常，见 MortalityCalibration 注释）");
 
         RecomputePyramidMax();
     }

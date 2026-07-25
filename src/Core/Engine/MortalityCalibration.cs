@@ -20,7 +20,17 @@ namespace ChinaDemographicModel.Core.Engine;
 public sealed class MortalityCalibration
 {
     /// 拟合窗口（末 N 个观测年）。
-    public int WindowYears { get; init; } = 12;
+    ///
+    /// k(y) 的实测形状是三段：1983-2004 在 1.0 附近平；2004-2013 由 1.03 陡升到 1.25
+    /// （老年段缺口快速累积）；2013 至今在 1.23-1.30 之间**平台化、只剩噪声**。
+    /// 因此末窗口的线性 R² 只有 ~0.24 —— 这不是"拟合差"，而是"已无趋势可拟合"。
+    /// 刻意拉长窗口把 R² 做高（30 年线性 0.88 / 二次 0.92）反而是拟合 2004-2013 的爬坡段，
+    /// 外推会让 k 一路上涨，与近 12 年的平台事实矛盾 —— 高 R² 在这里是陷阱。
+    /// 故采用**稳健水平 + 按解释力收缩的斜率**，见 EnsureFit / ProjectK。
+    public int WindowYears { get; init; } = 15;
+
+    /// 水平锚：取末 N 年 k 的均值，避免单年噪声（如 2022=1.233 vs 2023=1.303）被当成新水平。
+    public int LevelYears { get; init; } = 5;
     /// 阻尼系数：预测年每远一年，趋势增量按 φ 衰减（φ<1 → 收敛，不发散）。
     public double Damping { get; init; } = 0.85;
     /// k 的合理区间，防止异常数据把修正推到荒谬值。
@@ -29,7 +39,7 @@ public sealed class MortalityCalibration
 
     private readonly List<(int Year, double K)> _points = new();
 
-    private double _slope, _intercept, _rSquared;
+    private double _slope, _intercept, _rSquared, _rmse, _level;
     private int _lastYear = int.MinValue;
     private double _lastK = 1.0;
     private bool _fitted;
@@ -44,13 +54,22 @@ public sealed class MortalityCalibration
         _fitted = false;
     }
 
-    /// 拟合优度 R²（末窗口内）。点数不足返回 0。
+    /// 窗口内线性趋势的解释力 R²。平台期本就接近 0 —— 见 WindowYears 注释。
     public double RSquared { get { EnsureFit(); return _rSquared; } }
+
+    /// 残差标准差（k 的绝对单位）。平台期用它衡量拟合质量比 R² 有意义得多。
+    public double Rmse { get { EnsureFit(); return _rmse; } }
+
+    /// 稳健水平锚（末 LevelYears 年均值）。
+    public double Level { get { EnsureFit(); return _level; } }
 
     public int PointCount => _points.Count;
 
-    /// 预测年的修正系数：拟合直线 + 阻尼外推 + clamp。
-    /// 边界连续性：h=0 时返回末观测 k 本身，故 观测→预测 不跳变。
+    /// 预测年的修正系数 = 稳健水平 + 收缩后的斜率 × 阻尼几何和，再 clamp。
+    ///
+    /// 斜率按 R² 收缩（slope × R²）：趋势解释了多少方差，就采信多少。
+    /// 平台期 R²≈0.24 → 斜率几乎不起作用，k 稳定在水平锚附近 → "稳定预期"；
+    /// 若将来数据真的重新出现趋势，R² 上升，斜率自动恢复权重。
     public double ProjectK(int year)
     {
         EnsureFit();
@@ -60,9 +79,8 @@ public sealed class MortalityCalibration
         int h = year - _lastYear;
         if (h <= 0) return _lastK;
 
-        // 阻尼几何和：kLast + slope * Σ_{i=1..h} φ^(i-1)
         double geo = Math.Abs(1 - Damping) < 1e-9 ? h : (1 - Math.Pow(Damping, h)) / (1 - Damping);
-        double k = _lastK + _slope * geo;
+        double k = _level + _slope * _rSquared * geo;
         return Math.Clamp(k, KFloor, KCeiling);
     }
 
@@ -70,7 +88,12 @@ public sealed class MortalityCalibration
     {
         if (_fitted) return;
         _fitted = true;
-        _slope = 0; _intercept = _lastK; _rSquared = 0;
+        _slope = 0; _intercept = _lastK; _rSquared = 0; _rmse = 0; _level = _lastK;
+
+        // 稳健水平锚：末 LevelYears 年均值
+        int lvlN = Math.Min(LevelYears, _points.Count);
+        if (lvlN > 0)
+            _level = _points.GetRange(_points.Count - lvlN, lvlN).Average(p => p.K);
 
         var win = _points.Count <= WindowYears
             ? _points
@@ -97,5 +120,6 @@ public sealed class MortalityCalibration
             ssRes += (p.K - pred) * (p.K - pred);
         }
         _rSquared = ssTot > 1e-12 ? Math.Max(0, 1 - ssRes / ssTot) : 1.0;
+        _rmse = Math.Sqrt(ssRes / win.Count);
     }
 }

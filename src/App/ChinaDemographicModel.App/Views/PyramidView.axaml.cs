@@ -54,8 +54,8 @@ public partial class PyramidView : UserControl
         double h = PyramidCanvas.Bounds.Height;
         if (w < 40 || h < 40) return;
         int maxAge = PopulationPyramid.MaxAge;
-        double rowH = h / (maxAge + 1);
-        int age = (int)Math.Round((h - pos.Y) / rowH - 0.5);
+        var L = ComputeLayout(h);                       // 与绘制共用同一布局，避免点错行
+        int age = L.Rows - 1 - (int)Math.Floor((pos.Y - L.Top) / L.RowH);
         if (age < 0 || age > maxAge) return;
         _selectedAge = age;
         _selectedIsMaleSide = pos.X < w / 2.0;
@@ -66,6 +66,50 @@ public partial class PyramidView : UserControl
     {
         _selectedAge = -1;
         Redraw();
+    }
+
+    /// 金字塔行布局。**所有行高 / 纵坐标都吸附到整数设备像素**。
+    ///
+    /// 为什么：此前 rowH = h/101 是小数（如 6.93），条带的 y 与高度落在非整数像素上，
+    /// 抗锯齿把边缘摊成两个半透明像素，1px 的缝被填掉 → 条形粘连；且各行小数部分不同
+    /// （0.93、0.86、0.79…），于是有的粘有的不粘，即 backlog 记的"行间距四舍五入不一致"。
+    ///
+    /// 相比"固定缩放倍数 + Viewbox"：Viewbox 会以非整数倍整体拉伸，虽然各行一致，
+    /// 但边缘依旧落在半像素上（均匀地糊），而且面板文字会跟着缩放。
+    /// 这里改为逐行吸附到设备像素，既填满窗口又保持锐利。
+    private readonly record struct PyramidLayout(double Top, double RowH, double BarH, double Radius, int Rows)
+    {
+        /// 年龄 a 的条带顶端 y（a=0 在最下）。
+        public double YOf(int age) => Top + (Rows - 1 - age) * RowH;
+    }
+
+    private PyramidLayout ComputeLayout(double h)
+    {
+        int rows = PopulationPyramid.MaxAge + 1;            // 101
+        double s = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1.0;
+        if (s <= 0) s = 1.0;
+
+        // 每行占整数个设备像素；留 1 设备像素作缝（行太矮时放弃缝，否则条会消失）
+        double rowDev = Math.Floor(h * s / rows);
+        if (rowDev < 2) rowDev = 2;
+        double gapDev = rowDev >= 4 ? 1 : 0;
+
+        double rowH = rowDev / s;
+        double barH = (rowDev - gapDev) / s;
+        double used = rowH * rows;
+        double top = Math.Round((h - used) / 2 * s) / s;    // 居中，并吸附
+        if (top < 0) top = 0;
+
+        double radius = rowDev - gapDev >= 6 ? 1.5 : 0;     // 条太薄时圆角会吃掉边缘
+        return new PyramidLayout(top, rowH, barH, radius, rows);
+    }
+
+    /// 吸附到整数设备像素。
+    private double Snap(double v)
+    {
+        double s = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1.0;
+        if (s <= 0) s = 1.0;
+        return Math.Round(v * s) / s;
     }
 
     private void Redraw()
@@ -80,7 +124,8 @@ public partial class PyramidView : UserControl
         if (w < 40 || h < 40) return;
 
         int maxAge = PopulationPyramid.MaxAge;
-        double rowH = h / (maxAge + 1);
+        var L = ComputeLayout(h);
+        double rowH = L.RowH;
 
         double maxVal = _vm.PyramidMaxPerAge;
         if (maxVal <= 0)
@@ -94,7 +139,7 @@ public partial class PyramidView : UserControl
         }
         if (maxVal <= 0) maxVal = 1;
 
-        double center = w / 2.0;
+        double center = Snap(w / 2.0);
         double halfW = (w - 80) / 2.0;
         double xScale = halfW / maxVal;
 
@@ -108,7 +153,7 @@ public partial class PyramidView : UserControl
 
         for (int a = 0; a <= maxAge; a += 10)
         {
-            double y = h - (a + 0.5) * rowH;
+            double y = L.YOf(a) + rowH / 2;
             var tb = new TextBlock
             {
                 Text = a.ToString(),
@@ -126,22 +171,22 @@ public partial class PyramidView : UserControl
 
         for (int a = 0; a <= maxAge; a++)
         {
-            double y = h - (a + 1) * rowH;
-            double mh = Math.Max(1, rowH - 1);
+            double y = L.YOf(a);
+            double mh = L.BarH;
 
-            double maleW = p.Male[a] * xScale;
-            double femaleW = p.Female[a] * xScale;
+            double maleW = Snap(p.Male[a] * xScale);
+            double femaleW = Snap(p.Female[a] * xScale);
 
             if (maleW > 0.5)
             {
-                var rect = new Rectangle { Width = maleW, Height = mh, Fill = maleBrush, Opacity = 0.85, RadiusX = 1.5, RadiusY = 1.5 };
+                var rect = MakeBar(maleW, mh, maleBrush, L.Radius);
                 Canvas.SetLeft(rect, center - maleW);
                 Canvas.SetTop(rect, y);
                 PyramidCanvas.Children.Add(rect);
             }
             if (femaleW > 0.5)
             {
-                var rect = new Rectangle { Width = femaleW, Height = mh, Fill = femaleBrush, Opacity = 0.85, RadiusX = 1.5, RadiusY = 1.5 };
+                var rect = MakeBar(femaleW, mh, femaleBrush, L.Radius);
                 Canvas.SetLeft(rect, center);
                 Canvas.SetTop(rect, y);
                 PyramidCanvas.Children.Add(rect);
@@ -149,8 +194,8 @@ public partial class PyramidView : UserControl
 
             if (baseline != null && baseline != p)
             {
-                double bm = baseline.Male[a] * xScale;
-                double bf = baseline.Female[a] * xScale;
+                double bm = Snap(baseline.Male[a] * xScale);
+                double bf = Snap(baseline.Female[a] * xScale);
                 if (bm > 0.5)
                 {
                     var ol = new Rectangle
@@ -192,7 +237,20 @@ public partial class PyramidView : UserControl
             PyramidCanvas.Children.Add(tbR);
         }
 
-        if (_selectedAge >= 0) RenderDetailsPanel(w, h, rowH);
+        if (_selectedAge >= 0) RenderDetailsPanel(w, h, L);
+    }
+
+    /// 条带：关闭抗锯齿（EdgeMode.Aliased），配合设备像素吸附 → 边缘锐利、缝隙不被糊掉。
+    /// 只作用于条带本身，标签 / 详情面板的文字仍保持正常抗锯齿。
+    private static Rectangle MakeBar(double w, double hgt, IBrush fill, double radius)
+    {
+        var r = new Rectangle
+        {
+            Width = w, Height = hgt, Fill = fill, Opacity = 0.85,
+            RadiusX = radius, RadiusY = radius,
+        };
+        RenderOptions.SetEdgeMode(r, EdgeMode.Aliased);
+        return r;
     }
 
     private TextBlock MakeLabel(string text, double y)
@@ -219,7 +277,7 @@ public partial class PyramidView : UserControl
         PyramidCanvas.Children.Add(line);
     }
 
-    private void RenderDetailsPanel(double canvasW, double canvasH, double rowH)
+    private void RenderDetailsPanel(double canvasW, double canvasH, PyramidLayout L)
     {
         if (_vm?.CurrentPyramid == null) return;
         var p = _vm.CurrentPyramid;
@@ -315,9 +373,9 @@ public partial class PyramidView : UserControl
         border.Measure(new Size(380, double.PositiveInfinity));
 
         double tx = _selectedIsMaleSide ? 50 : canvasW - border.DesiredSize.Width - 50;
-        double anchorY = canvasH - (_selectedAge + 1) * rowH;
+        double anchorY = L.YOf(_selectedAge);
         double ty = anchorY - border.DesiredSize.Height - 8;
-        if (ty < 4) ty = anchorY + rowH + 8;
+        if (ty < 4) ty = anchorY + L.RowH + 8;
         if (ty + border.DesiredSize.Height > canvasH) ty = canvasH - border.DesiredSize.Height - 4;
         if (ty < 4) ty = 4;
         Canvas.SetLeft(border, tx);
