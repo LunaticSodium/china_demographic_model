@@ -2,29 +2,37 @@
 
 [![Release](https://img.shields.io/github/v/release/LunaticSodium/china_demographic_model)](https://github.com/LunaticSodium/china_demographic_model/releases)
 
-用 cohort-component 方法推演中国人口年龄结构（1978–2050），可以修改任意年份的输入做反事实对比。
+按 cohort-component 方法计算 1978–2050 年中国人口年龄结构。可修改任意年份的出生数、出生性别比、总和生育率、平均初婚年龄、预期寿命等输入，重新计算并与基线对比。
 
-C# / Avalonia，支持 Windows、Android、macOS。
+## 系统要求
 
-## 下载
+- Windows 10 及以上，64 位
+- Android 5.0 及以上
+- macOS 11 及以上，Apple Silicon
 
-[Releases](https://github.com/LunaticSodium/china_demographic_model/releases)
+## 安装
 
-- **Windows** — exe，双击运行
-- **Android** — apk，侧载
-- **macOS** — dmg，仅 Apple Silicon。首次打开在 `系统设置 → 隐私与安全性` 点「仍要打开」
+从 [Releases](https://github.com/LunaticSodium/china_demographic_model/releases) 下载对应平台的文件。
 
-## 从源码运行
+**Windows**：下载 `.exe`，双击运行。无需安装 .NET 运行时。
 
-需要 .NET 8 SDK 或更高。
+**Android**：下载 `.apk`，在系统设置中允许安装未知来源的应用，然后打开该文件。
+
+**macOS**：下载 `.dmg`，打开后将应用拖入「应用程序」文件夹。首次启动会被系统拦截，在「系统设置 → 隐私与安全性」中点击「仍要打开」。
+
+## 从源码构建
+
+需要 .NET 8 SDK 或更高版本。
 
 ```sh
+git clone https://github.com/LunaticSodium/china_demographic_model.git
+cd china_demographic_model
 dotnet run --project src/App/ChinaDemographicModel.App.Desktop
 ```
 
-## 数据
+## 数据来源
 
-NBS 统计年鉴、五次全国人口普查、民政部婚姻统计。观测年锁定官方公布值，缺失年份线性插值。
+国家统计局《中国统计年鉴》、第三至第七次全国人口普查、民政部婚姻登记统计。观测年份使用官方公布值，缺失年份线性插值。
 
 ## 文档
 
@@ -33,6 +41,6 @@ NBS 统计年鉴、五次全国人口普查、民政部婚姻统计。观测年�
 - `docs/AUDIT.md` — 方法学自查与已知偏差
 - `CHANGELOG.md` — 变更记录
 
-## License
+## 许可
 
-私人项目，未授权重发。
+私人项目，未经授权不得再分发。
