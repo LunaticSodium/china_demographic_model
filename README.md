@@ -22,9 +22,15 @@
 |---|---|
 | Windows | 自包含单文件 exe，双击即可，无需安装 .NET |
 | Android | apk 侧载（需在系统里允许安装未知来源应用） |
-| macOS | 按芯片选 Apple Silicon 或 Intel 版 dmg |
+| macOS | dmg，仅 Apple Silicon（M 系列）。Intel Mac 未提供预编译包，可自行 `-r osx-x64` 从源码构建 |
 
-macOS 上因为应用没有 Apple 开发者签名，首次打开需要在 `系统设置 → 隐私与安全性` 里点「仍要打开」。
+macOS 上应用只做了 ad-hoc 签名、没有 Apple 公证（那需要付费开发者账号），所以首次打开会被拦一次。把 app 拖进「应用程序」后：
+
+```sh
+xattr -dr com.apple.quarantine /Applications/ChinaDemographicModel.app
+```
+
+或者直接双击，然后到 `系统设置 → 隐私与安全性` 点「仍要打开」。
 
 从源码跑（需 .NET 8 SDK 或更高）：
 

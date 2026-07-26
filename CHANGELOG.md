@@ -5,7 +5,7 @@
 ## v1.3.1
 
 - **修复 macOS dmg 无法打开**。此前 .app 完全未签名，Apple Silicon 上从网络下载（带 quarantine 标记）会直接报「应用已损坏」。现在 CI 对 bundle 做 ad-hoc 签名（`codesign --force --deep --sign -`）并校验。
-- **macOS 双架构**。此前只出 `osx-arm64`，Intel Mac 无法运行。现在 Apple Silicon / Intel 各出一个 dmg。
+- macOS 仅提供 Apple Silicon (`osx-arm64`) 预编译 dmg；现役 Mac 基本都是 M 系列，Intel 用户可自行 `-r osx-x64` 从源码构建。
 - macOS bundle 的 `CFBundleIdentifier` 与 Android/iOS 统一为 `io.github.lunaticsodium.chinademographic`（此前是 `com.demo.…` 占位）。
 - README 改写为项目自述；详细变更移入本文件。
 
